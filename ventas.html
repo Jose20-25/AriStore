@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AriStore - Módulo de Ventas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="logos/aristore.png" alt="AriStore Logo" class="logo">
+                <div>
+                    <h1>AriStore</h1>
+                    <p>Módulo de Ventas - Punto de Venta</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Navegación -->
+            <div class="navbar">
+                <a href="index.html" class="nav-item">
+                    <i class="nav-icon fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="inventario.html" class="nav-item">
+                    <i class="nav-icon inventory fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="nav-icon sales fas fa-cash-register"></i>
+                    <span>Ventas</span>
+                </a>
+                <a href="#" class="nav-item" onclick="navigateTo('customers')">
+                    <i class="nav-icon customers fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="#" class="nav-item" onclick="navigateTo('suppliers')">
+                    <i class="nav-icon suppliers fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+                <a href="#" class="nav-item" onclick="navigateTo('reports')">
+                    <i class="nav-icon reports fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+                <a href="#" class="nav-item" onclick="navigateTo('settings')">
+                    <i class="nav-icon settings fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Estadísticas de Ventas -->
+        <div class="sales-stats">
+            <div class="sales-stat-card">
+                <div class="sales-stat-icon today">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="sales-stat-number" id="todaySalesCount">0</div>
+                <div class="sales-stat-label">Ventas Hoy</div>
+            </div>
+            <div class="sales-stat-card">
+                <div class="sales-stat-icon total">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="sales-stat-number" id="todayRevenue">$0</div>
+                <div class="sales-stat-label">Ingresos Hoy</div>
+            </div>
+            <div class="sales-stat-card">
+                <div class="sales-stat-icon average">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="sales-stat-number" id="averageSale">$0</div>
+                <div class="sales-stat-label">Venta Promedio</div>
+            </div>
+        </div>
+
+        <!-- Contenedor Principal del POS -->
+        <div class="sales-container">
+            <!-- Sección de Productos (POS) -->
+            <div class="pos-section">
+                <div class="section-title">
+                    <i class="fas fa-shopping-cart" style="color: #4ecdc4;"></i>
+                    Punto de Venta
+                </div>
+
+                <!-- Barra de Búsqueda -->
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="productSearch" placeholder="Buscar productos por nombre o código...">
+                </div>
+
+                <!-- Grid de Productos -->
+                <div class="products-grid" id="productsGrid">
+                    <!-- Los productos se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+
+            <!-- Sección del Carrito -->
+            <div class="cart-section">
+                <div class="cart-header">
+                    <div class="cart-title">Carrito de Compras</div>
+                    <div class="cart-count" id="cartCount">0</div>
+                </div>
+
+                <!-- Cliente -->
+                <div style="margin-bottom: 20px;">
+                    <label style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 8px; display: block;">Cliente:</label>
+                    <select id="customerSelect" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: Inter;">
+                        <option value="">Cliente General</option>
+                        <option value="cliente1">María García</option>
+                        <option value="cliente2">Juan Pérez</option>
+                        <option value="cliente3">Ana Rodríguez</option>
+                    </select>
+                </div>
+
+                <!-- Items del Carrito -->
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                        <p>El carrito está vacío</p>
+                        <p style="font-size: 0.8rem;">Agrega productos para comenzar</p>
+                    </div>
+                </div>
+
+                <!-- Total -->
+                <div class="cart-total" id="cartTotal" style="display: none;">
+                    <div class="total-row">
+                        <span class="total-label">Subtotal:</span>
+                        <span class="total-value" id="subtotal">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">IVA (16%):</span>
+                        <span class="total-value" id="tax">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Descuento:</span>
+                        <span class="total-value" id="discount">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Total:</span>
+                        <span class="total-value final" id="finalTotal">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Descuento -->
+                <div style="margin-bottom: 16px; display: none;" id="discountSection">
+                    <label style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 8px; display: block;">Descuento (%):</label>
+                    <input type="number" id="discountInput" min="0" max="100" value="0" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: Inter;" placeholder="0">
+                </div>
+
+                <!-- Botones -->
+                <button class="checkout-btn" id="processButton" disabled onclick="processSale()">
+                    <i class="fas fa-credit-card"></i>
+                    Procesar Venta
+                </button>
+                <button class="clear-cart-btn" onclick="clearCart()">
+                    <i class="fas fa-trash"></i>
+                    Limpiar Carrito
+                </button>
+            </div>
+        </div>
+
+        <!-- Historial de Ventas -->
+        <div class="dashboard-card" style="margin-top: 32px;">
+            <div class="chart-title">
+                <i class="fas fa-history" style="color: #f9ca24;"></i>
+                Historial de Ventas Recientes
+            </div>
+            <div class="chart-subtitle">Últimas transacciones realizadas</div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <th style="text-align: left; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">ID</th>
+                            <th style="text-align: left; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">Fecha</th>
+                            <th style="text-align: left; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">Cliente</th>
+                            <th style="text-align: right; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">Total</th>
+                            <th style="text-align: center; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">Estado</th>
+                            <th style="text-align: center; padding: 12px; color: rgba(255,255,255,0.8); font-weight: 600;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesHistory">
+                        <!-- El historial se cargará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
+    <!-- Modal de Recibo -->
+    <div id="receiptModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: rgba(28, 28, 38, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h2 style="color: #fff; margin-bottom: 8px;">Recibo de Venta</h2>
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">AriStore - Sistema de Gestión</p>
+            </div>
+            
+            <div id="receiptContent">
+                <!-- El contenido del recibo se generará aquí -->
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button onclick="printReceipt()" style="flex: 1; background: linear-gradient(135deg, #4ecdc4, #44bd87); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button onclick="downloadReceiptPDF()" style="flex: 1; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-download"></i> Descargar PDF
+                </button>
+                <button onclick="closeReceiptModal()" style="flex: 1; background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let cart = [];
+        let currentSaleId = 1;
+        let salesHistory = [];
+        let products = [];
+
+        // Inicializar productos desde localStorage o crear datos de ejemplo
+        function initializeProducts() {
+            const storedProducts = localStorage.getItem('aristore_products');
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+            } else {
+                // Productos de ejemplo si no hay datos
+                products = [
+                    {
+                        id: 'ARS001',
+                        name: 'Auriculares Bluetooth Pro',
+                        price: 89.99,
+                        stock: 15,
+                        category: 'Auriculares',
+                        description: 'Auriculares inalámbricos con cancelación de ruido'
+                    },
+                    {
+                        id: 'ARS002',
+                        name: 'Cargador Inalámbrico 15W',
+                        price: 34.99,
+                        stock: 25,
+                        category: 'Cargadores',
+                        description: 'Cargador inalámbrico rápido compatible con todos los dispositivos'
+                    },
+                    {
+                        id: 'ARS003',
+                        name: 'Funda iPhone Pro Max',
+                        price: 24.99,
+                        stock: 8,
+                        category: 'Fundas',
+                        description: 'Funda resistente con protección militar'
+                    },
+                    {
+                        id: 'ARS004',
+                        name: 'Cable USB-C 2m',
+                        price: 12.99,
+                        stock: 45,
+                        category: 'Cables',
+                        description: 'Cable de carga rápida USB-C de alta calidad'
+                    },
+                    {
+                        id: 'ARS005',
+                        name: 'Smartwatch Fitness',
+                        price: 159.99,
+                        stock: 12,
+                        category: 'Smartwatch',
+                        description: 'Reloj inteligente con monitor de salud y GPS'
+                    },
+                    {
+                        id: 'ARS006',
+                        name: 'Power Bank 10000mAh',
+                        price: 45.99,
+                        stock: 0,
+                        category: 'Cargadores',
+                        description: 'Batería portátil de alta capacidad'
+                    }
+                ];
+            }
+            renderProducts();
+        }
+
+        // Renderizar productos
+        function renderProducts(filteredProducts = null) {
+            const productsToRender = filteredProducts || products;
+            const grid = document.getElementById('productsGrid');
+            
+            grid.innerHTML = productsToRender.map(product => {
+                const isOutOfStock = product.stock === 0;
+                const isLowStock = product.stock > 0 && product.stock <= 5;
+                
+                return `
+                    <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}" onclick="${isOutOfStock ? '' : `addToCart('${product.id}')`}">
+                        <div class="product-image">
+                            <i class="${getProductIcon(product.category)}"></i>
+                        </div>
+                        <div class="product-info">
+                            <h4>${product.name}</h4>
+                            <div class="product-price">$${product.price.toFixed(2)}</div>
+                            <div class="product-stock ${isOutOfStock ? 'out-of-stock' : isLowStock ? 'low-stock' : ''}">
+                                ${isOutOfStock ? 'Sin stock' : `Stock: ${product.stock}`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Obtener icono según categoría
+        function getProductIcon(category) {
+            const icons = {
+                'Auriculares': 'fas fa-headphones',
+                'Cargadores': 'fas fa-plug',
+                'Fundas': 'fas fa-mobile-alt',
+                'Cables': 'fas fa-usb',
+                'Smartwatch': 'fas fa-watch',
+                'default': 'fas fa-box'
+            };
+            return icons[category] || icons.default;
+        }
+
+        // Búsqueda de productos
+        function setupSearch() {
+            const searchInput = document.getElementById('productSearch');
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = products.filter(product => 
+                    product.name.toLowerCase().includes(term) ||
+                    product.id.toLowerCase().includes(term) ||
+                    product.category.toLowerCase().includes(term)
+                );
+                renderProducts(filtered);
+            });
+        }
+
+        // Agregar al carrito
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock === 0) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                if (existingItem.quantity < product.stock) {
+                    existingItem.quantity++;
+                } else {
+                    alert('No hay suficiente stock disponible');
+                    return;
+                }
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    maxStock: product.stock
+                });
+            }
+
+            updateCartDisplay();
+        }
+
+        // Actualizar carrito
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotal = document.getElementById('cartTotal');
+            const discountSection = document.getElementById('discountSection');
+            const processButton = document.getElementById('processButton');
+
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                        <p>El carrito está vacío</p>
+                        <p style="font-size: 0.8rem;">Agrega productos para comenzar</p>
+                    </div>
+                `;
+                cartTotal.style.display = 'none';
+                discountSection.style.display = 'none';
+                processButton.disabled = true;
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">$${item.price.toFixed(2)} c/u</div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)" ${item.quantity <= 1 ? 'disabled' : ''}>
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.maxStock}" onchange="setQuantity('${item.id}', this.value)">
+                            <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)" ${item.quantity >= item.maxStock ? 'disabled' : ''}>
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button class="remove-btn" onclick="removeFromCart('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+                updateTotals();
+                cartTotal.style.display = 'block';
+                discountSection.style.display = 'block';
+                processButton.disabled = false;
+            }
+        }
+
+        // Actualizar cantidad
+        function updateQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                const newQuantity = item.quantity + change;
+                if (newQuantity >= 1 && newQuantity <= item.maxStock) {
+                    item.quantity = newQuantity;
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        // Establecer cantidad específica
+        function setQuantity(productId, quantity) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                const qty = parseInt(quantity);
+                if (qty >= 1 && qty <= item.maxStock) {
+                    item.quantity = qty;
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        // Remover del carrito
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartDisplay();
+        }
+
+        // Limpiar carrito
+        function clearCart() {
+            if (cart.length === 0) return;
+            
+            if (confirm('¿Estás seguro de que quieres limpiar el carrito?')) {
+                cart = [];
+                updateCartDisplay();
+            }
+        }
+
+        // Actualizar totales
+        function updateTotals() {
+            const discountInput = document.getElementById('discountInput');
+            const discountPercent = parseFloat(discountInput.value) || 0;
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = subtotal * (discountPercent / 100);
+            const subtotalAfterDiscount = subtotal - discountAmount;
+            const tax = subtotalAfterDiscount * 0.16; // 16% IVA
+            const total = subtotalAfterDiscount + tax;
+
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('discount').textContent = `-$${discountAmount.toFixed(2)}`;
+            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('finalTotal').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Configurar descuento
+        function setupDiscount() {
+            const discountInput = document.getElementById('discountInput');
+            discountInput.addEventListener('input', updateTotals);
+        }
+
+        // Procesar venta
+        function processSale() {
+            if (cart.length === 0) return;
+
+            showLoading();
+
+            setTimeout(() => {
+                const customer = document.getElementById('customerSelect').value || 'Cliente General';
+                const discountPercent = parseFloat(document.getElementById('discountInput').value) || 0;
+                
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const discountAmount = subtotal * (discountPercent / 100);
+                const subtotalAfterDiscount = subtotal - discountAmount;
+                const tax = subtotalAfterDiscount * 0.16;
+                const total = subtotalAfterDiscount + tax;
+
+                // Crear venta
+                const sale = {
+                    id: `VTA-${String(currentSaleId).padStart(4, '0')}`,
+                    date: new Date().toISOString(),
+                    customer: customer === '' ? 'Cliente General' : document.getElementById('customerSelect').options[document.getElementById('customerSelect').selectedIndex].text,
+                    items: [...cart],
+                    subtotal: subtotal,
+                    discount: discountAmount,
+                    tax: tax,
+                    total: total,
+                    status: 'Completada'
+                };
+
+                // Actualizar stock
+                cart.forEach(cartItem => {
+                    const product = products.find(p => p.id === cartItem.id);
+                    if (product) {
+                        product.stock -= cartItem.quantity;
+                    }
+                });
+
+                // Guardar productos actualizados
+                localStorage.setItem('aristore_products', JSON.stringify(products));
+
+                // Agregar a historial
+                salesHistory.unshift(sale);
+                localStorage.setItem('aristore_sales', JSON.stringify(salesHistory));
+
+                // Actualizar estadísticas
+                updateSalesStats();
+
+                // Mostrar recibo
+                showReceipt(sale);
+
+                // Limpiar carrito
+                cart = [];
+                document.getElementById('discountInput').value = '0';
+                document.getElementById('customerSelect').value = '';
+                updateCartDisplay();
+                renderProducts();
+                renderSalesHistory();
+
+                currentSaleId++;
+                hideLoading();
+            }, 1500);
+        }
+
+        // Mostrar recibo
+        function showReceipt(sale) {
+            const modal = document.getElementById('receiptModal');
+            const content = document.getElementById('receiptContent');
+            
+            content.innerHTML = `
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.8);">ID de Venta:</span>
+                        <span style="color: #fff; font-weight: 600;">${sale.id}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.8);">Fecha:</span>
+                        <span style="color: #fff;">${formatDate(sale.date)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: rgba(255,255,255,0.8);">Cliente:</span>
+                        <span style="color: #fff;">${sale.customer}</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <h4 style="color: #fff; margin-bottom: 12px;">Productos:</h4>
+                    ${sale.items.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div style="flex: 1;">
+                                <div style="color: #fff; font-weight: 500;">${item.name}</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">${item.quantity} x $${item.price.toFixed(2)}</div>
+                            </div>
+                            <div style="color: #4ecdc4; font-weight: 600;">$${(item.quantity * item.price).toFixed(2)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.8);">Subtotal:</span>
+                        <span style="color: #fff;">$${sale.subtotal.toFixed(2)}</span>
+                    </div>
+                    ${sale.discount > 0 ? `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: rgba(255,255,255,0.8);">Descuento:</span>
+                            <span style="color: #f9ca24;">-$${sale.discount.toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.8);">IVA (16%):</span>
+                        <span style="color: #fff;">$${sale.tax.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: #fff;">Total:</span>
+                        <span style="color: #4ecdc4;">$${sale.total.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // Cerrar modal de recibo
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').style.display = 'none';
+        }
+
+        // Imprimir recibo
+        function printReceipt() {
+            const saleData = getCurrentSaleData();
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Recibo de Venta - AriStore</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            * {
+                                margin: 0;
+                                padding: 0;
+                                box-sizing: border-box;
+                            }
+                            
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                line-height: 1.4;
+                                color: #333;
+                                background-color: #fff;
+                            }
+                            
+                            .receipt {
+                                max-width: 400px;
+                                margin: 20px auto;
+                                padding: 30px;
+                                border: 2px solid #e0e0e0;
+                                border-radius: 10px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                            }
+                            
+                            .header {
+                                text-align: center;
+                                margin-bottom: 25px;
+                                padding-bottom: 20px;
+                                border-bottom: 2px solid #4ecdc4;
+                            }
+                            
+                            .logo {
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #4ecdc4;
+                                margin-bottom: 8px;
+                            }
+                            
+                            .company-info {
+                                font-size: 12px;
+                                color: #666;
+                                margin-bottom: 15px;
+                            }
+                            
+                            .receipt-title {
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #333;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;
+                            }
+                            
+                            .sale-info {
+                                margin-bottom: 20px;
+                                padding: 15px;
+                                background-color: #f8f9fa;
+                                border-radius: 8px;
+                            }
+                            
+                            .info-row {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 8px;
+                                font-size: 14px;
+                            }
+                            
+                            .info-label {
+                                font-weight: 600;
+                                color: #555;
+                            }
+                            
+                            .info-value {
+                                color: #333;
+                            }
+                            
+                            .items-section {
+                                margin-bottom: 20px;
+                            }
+                            
+                            .section-title {
+                                font-size: 16px;
+                                font-weight: bold;
+                                color: #333;
+                                margin-bottom: 15px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                border-bottom: 1px solid #ddd;
+                                padding-bottom: 5px;
+                            }
+                            
+                            .item {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: flex-start;
+                                margin-bottom: 12px;
+                                padding: 12px;
+                                background-color: #fafafa;
+                                border-radius: 6px;
+                                border-left: 4px solid #4ecdc4;
+                            }
+                            
+                            .item-details {
+                                flex: 1;
+                            }
+                            
+                            .item-name {
+                                font-weight: 600;
+                                color: #333;
+                                margin-bottom: 4px;
+                                font-size: 14px;
+                            }
+                            
+                            .item-qty-price {
+                                font-size: 12px;
+                                color: #666;
+                            }
+                            
+                            .item-total {
+                                font-weight: bold;
+                                color: #4ecdc4;
+                                font-size: 14px;
+                            }
+                            
+                            .totals-section {
+                                margin-top: 20px;
+                                padding: 20px;
+                                background-color: #f8f9fa;
+                                border-radius: 8px;
+                                border: 1px solid #e9ecef;
+                            }
+                            
+                            .total-row {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 10px;
+                                font-size: 14px;
+                            }
+                            
+                            .total-label {
+                                color: #555;
+                                font-weight: 500;
+                            }
+                            
+                            .total-value {
+                                color: #333;
+                                font-weight: 600;
+                            }
+                            
+                            .final-total {
+                                border-top: 2px solid #4ecdc4;
+                                padding-top: 12px;
+                                margin-top: 12px;
+                                font-size: 16px;
+                                font-weight: bold;
+                            }
+                            
+                            .final-total .total-label {
+                                color: #333;
+                                font-size: 16px;
+                            }
+                            
+                            .final-total .total-value {
+                                color: #4ecdc4;
+                                font-size: 18px;
+                            }
+                            
+                            .footer {
+                                text-align: center;
+                                margin-top: 25px;
+                                padding-top: 20px;
+                                border-top: 1px dashed #ccc;
+                                font-size: 12px;
+                                color: #666;
+                            }
+                            
+                            .thank-you {
+                                font-weight: bold;
+                                color: #4ecdc4;
+                                margin-bottom: 10px;
+                            }
+                            
+                            @media print {
+                                body { margin: 0; }
+                                .receipt { 
+                                    box-shadow: none; 
+                                    border: none; 
+                                    margin: 0;
+                                    max-width: none;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt">
+                            <div class="header">
+                                <div class="logo">🛍️ AriStore</div>
+                                <div class="company-info">
+                                    Sistema de Gestión Comercial<br>
+                                    📞 Tel: (123) 456-7890<br>
+                                    📧 info@aristore.com
+                                </div>
+                                <div class="receipt-title">Recibo de Venta</div>
+                            </div>
+                            
+                            <div class="sale-info">
+                                <div class="info-row">
+                                    <span class="info-label">N° de Venta:</span>
+                                    <span class="info-value">${saleData.id}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Fecha:</span>
+                                    <span class="info-value">${saleData.formattedDate}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Cliente:</span>
+                                    <span class="info-value">${saleData.customer}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Atendido por:</span>
+                                    <span class="info-value">Sistema AriStore</span>
+                                </div>
+                            </div>
+                            
+                            <div class="items-section">
+                                <div class="section-title">Productos</div>
+                                ${saleData.items.map(item => `
+                                    <div class="item">
+                                        <div class="item-details">
+                                            <div class="item-name">${item.name}</div>
+                                            <div class="item-qty-price">${item.quantity} × $${item.price.toFixed(2)}</div>
+                                        </div>
+                                        <div class="item-total">$${(item.quantity * item.price).toFixed(2)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="totals-section">
+                                <div class="total-row">
+                                    <span class="total-label">Subtotal:</span>
+                                    <span class="total-value">$${saleData.subtotal.toFixed(2)}</span>
+                                </div>
+                                ${saleData.discount > 0 ? `
+                                    <div class="total-row">
+                                        <span class="total-label">Descuento:</span>
+                                        <span class="total-value">-$${saleData.discount.toFixed(2)}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="total-row">
+                                    <span class="total-label">IVA (16%):</span>
+                                    <span class="total-value">$${saleData.tax.toFixed(2)}</span>
+                                </div>
+                                <div class="total-row final-total">
+                                    <span class="total-label">TOTAL:</span>
+                                    <span class="total-value">$${saleData.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <div class="thank-you">¡Gracias por su compra!</div>
+                                <div>
+                                    Conserve este recibo para cualquier reclamación<br>
+                                    Garantía de 30 días en todos nuestros productos<br>
+                                    🌐 www.aristore.com
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            
+            // Esperar a que se cargue completamente antes de imprimir
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+            };
+        }
+
+        // Descargar recibo en PDF
+        function downloadReceiptPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const saleData = getCurrentSaleData();
+            
+            // Configuración de colores
+            const primaryColor = [78, 205, 196]; // #4ecdc4
+            const textColor = [51, 51, 51]; // #333
+            const grayColor = [102, 102, 102]; // #666
+            
+            // Header con logo y título
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            // Logo y título
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('🛍️ AriStore', 20, 20);
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Sistema de Gestión Comercial', 20, 28);
+            doc.text('Tel: (123) 456-7890 | info@aristore.com', 20, 34);
+            
+            // Título del recibo
+            doc.setTextColor(...textColor);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('RECIBO DE VENTA', 105, 60, { align: 'center' });
+            
+            // Información de la venta
+            let yPos = 80;
+            doc.setFillColor(248, 249, 250);
+            doc.rect(20, yPos - 5, 170, 35, 'F');
+            
+            doc.setTextColor(...textColor);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            
+            // Información en dos columnas
+            doc.text('N° de Venta:', 25, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text(saleData.id, 65, yPos);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Cliente:', 110, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text(saleData.customer, 135, yPos);
+            
+            yPos += 8;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Fecha:', 25, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text(saleData.formattedDate, 65, yPos);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Atendido por:', 110, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Sistema AriStore', 150, yPos);
+            
+            // Productos
+            yPos += 25;
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PRODUCTOS', 20, yPos);
+            
+            // Línea divisoria
+            doc.setDrawColor(...primaryColor);
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            
+            yPos += 10;
+            
+            // Headers de la tabla
+            doc.setTextColor(...textColor);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Producto', 25, yPos);
+            doc.text('Cant.', 120, yPos);
+            doc.text('Precio', 140, yPos);
+            doc.text('Total', 170, yPos);
+            
+            yPos += 5;
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, yPos, 190, yPos);
+            
+            // Items
+            yPos += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            
+            saleData.items.forEach((item, index) => {
+                if (yPos > 250) { // Nueva página si es necesario
+                    doc.addPage();
+                    yPos = 30;
+                }
+                
+                // Fondo alternado para items
+                if (index % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(20, yPos - 3, 170, 10, 'F');
+                }
+                
+                doc.setTextColor(...textColor);
+                // Nombre del producto (truncar si es muy largo)
+                const productName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name;
+                doc.text(productName, 25, yPos + 2);
+                doc.text(item.quantity.toString(), 125, yPos + 2);
+                doc.text(`$${item.price.toFixed(2)}`, 145, yPos + 2);
+                doc.text(`$${(item.quantity * item.price).toFixed(2)}`, 175, yPos + 2);
+                
+                yPos += 10;
+            });
+            
+            // Totales
+            yPos += 10;
+            doc.setFillColor(248, 249, 250);
+            doc.rect(20, yPos - 5, 170, 40, 'F');
+            
+            doc.setTextColor(...textColor);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            
+            // Subtotal
+            doc.text('Subtotal:', 130, yPos);
+            doc.text(`$${saleData.subtotal.toFixed(2)}`, 175, yPos, { align: 'right' });
+            
+            // Descuento (si aplica)
+            if (saleData.discount > 0) {
+                yPos += 7;
+                doc.text('Descuento:', 130, yPos);
+                doc.text(`-$${saleData.discount.toFixed(2)}`, 175, yPos, { align: 'right' });
+            }
+            
+            // IVA
+            yPos += 7;
+            doc.text('IVA (16%):', 130, yPos);
+            doc.text(`$${saleData.tax.toFixed(2)}`, 175, yPos, { align: 'right' });
+            
+            // Total final
+            yPos += 10;
+            doc.setDrawColor(...primaryColor);
+            doc.setLineWidth(1);
+            doc.line(125, yPos - 2, 185, yPos - 2);
+            
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL:', 130, yPos + 3);
+            doc.text(`$${saleData.total.toFixed(2)}`, 175, yPos + 3, { align: 'right' });
+            
+            // Footer
+            yPos += 20;
+            doc.setTextColor(...grayColor);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('¡Gracias por su compra!', 105, yPos, { align: 'center' });
+            
+            yPos += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text('Conserve este recibo para cualquier reclamación', 105, yPos, { align: 'center' });
+            doc.text('Garantía de 30 días en todos nuestros productos', 105, yPos + 5, { align: 'center' });
+            doc.text('🌐 www.aristore.com', 105, yPos + 10, { align: 'center' });
+            
+            // Guardar el PDF
+            const fileName = `AriStore_Recibo_${saleData.id}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            doc.save(fileName);
+        }
+        
+        // Función auxiliar para obtener datos de la venta actual
+        function getCurrentSaleData() {
+            const receiptContent = document.getElementById('receiptContent');
+            const modal = document.getElementById('receiptModal');
+            
+            // Si el modal está visible, obtener datos de la venta mostrada
+            if (modal.style.display === 'flex' && receiptContent.innerHTML) {
+                // Extraer ID de venta
+                const saleId = receiptContent.querySelector('span[style*="font-weight: 600"]')?.textContent || 'N/A';
+                
+                // Extraer fecha y cliente
+                const infoRows = receiptContent.querySelectorAll('div[style*="display: flex; justify-content: space-between"]');
+                let formattedDate = new Date().toLocaleString('es-ES');
+                let customer = 'Cliente General';
+                
+                if (infoRows.length >= 3) {
+                    formattedDate = infoRows[1]?.lastElementChild?.textContent || formattedDate;
+                    customer = infoRows[2]?.lastElementChild?.textContent || customer;
+                }
+                
+                // Extraer productos del modal
+                const productItems = [];
+                const productElements = receiptContent.querySelectorAll('div[style*="border-bottom: 1px solid rgba(255,255,255,0.05)"]');
+                
+                productElements.forEach(element => {
+                    const nameElement = element.querySelector('div[style*="color: #fff; font-weight: 500"]');
+                    const qtyPriceElement = element.querySelector('div[style*="color: rgba(255,255,255,0.6)"]');
+                    const totalElement = element.querySelector('div[style*="color: #4ecdc4; font-weight: 600"]');
+                    
+                    if (nameElement && qtyPriceElement && totalElement) {
+                        const name = nameElement.textContent.trim();
+                        const qtyPriceText = qtyPriceElement.textContent.trim();
+                        const totalText = totalElement.textContent.replace('$', '').trim();
+                        
+                        // Extraer cantidad y precio del texto "cantidad x $precio"
+                        const qtyPriceMatch = qtyPriceText.match(/(\d+)\s*x\s*\$(\d+\.?\d*)/);
+                        if (qtyPriceMatch) {
+                            const quantity = parseInt(qtyPriceMatch[1]);
+                            const price = parseFloat(qtyPriceMatch[2]);
+                            
+                            productItems.push({
+                                name: name,
+                                quantity: quantity,
+                                price: price
+                            });
+                        }
+                    }
+                });
+                
+                // Extraer totales del modal
+                const totalRows = receiptContent.querySelectorAll('div[style*="border-top: 1px solid rgba(255,255,255,0.1)"] div[style*="display: flex; justify-content: space-between"]');
+                let subtotal = 0, discount = 0, tax = 0, total = 0;
+                
+                totalRows.forEach(row => {
+                    const labelElement = row.querySelector('span[style*="color: rgba(255,255,255,0.8)"]');
+                    const valueElement = row.querySelector('span:last-child');
+                    
+                    if (labelElement && valueElement) {
+                        const label = labelElement.textContent.toLowerCase();
+                        const value = parseFloat(valueElement.textContent.replace(/[$-]/g, '')) || 0;
+                        
+                        if (label.includes('subtotal')) subtotal = value;
+                        else if (label.includes('descuento')) discount = value;
+                        else if (label.includes('iva')) tax = value;
+                        else if (label.includes('total')) total = value;
+                    }
+                });
+                
+                return {
+                    id: saleId,
+                    formattedDate: formattedDate,
+                    customer: customer,
+                    items: productItems,
+                    subtotal: subtotal,
+                    discount: discount,
+                    tax: tax,
+                    total: total
+                };
+            }
+            
+            // Si no hay venta activa, usar datos del carrito actual
+            const discountPercent = parseFloat(document.getElementById('discountInput')?.value) || 0;
+            const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const cartDiscount = cartSubtotal * (discountPercent / 100);
+            const cartTax = (cartSubtotal - cartDiscount) * 0.16;
+            const cartTotal = cartSubtotal - cartDiscount + cartTax;
+            
+            return {
+                id: `VTA-${String(currentSaleId).padStart(4, '0')}`,
+                formattedDate: new Date().toLocaleString('es-ES'),
+                customer: document.getElementById('customerSelect')?.options[document.getElementById('customerSelect')?.selectedIndex]?.text || 'Cliente General',
+                items: cart.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                subtotal: cartSubtotal,
+                discount: cartDiscount,
+                tax: cartTax,
+                total: cartTotal
+            };
+        }
+        
+        // Funciones auxiliares para obtener datos actuales (ya no son necesarias)
+        function getCurrentCartItems() {
+            return cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            }));
+        }
+        
+        function getCurrentSubtotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+        
+        function getCurrentDiscount() {
+            const discountPercent = parseFloat(document.getElementById('discountInput')?.value) || 0;
+            const subtotal = getCurrentSubtotal();
+            return subtotal * (discountPercent / 100);
+        }
+        
+        function getCurrentTax() {
+            const subtotal = getCurrentSubtotal();
+            const discount = getCurrentDiscount();
+            return (subtotal - discount) * 0.16;
+        }
+        
+        function getCurrentTotal() {
+            const subtotal = getCurrentSubtotal();
+            const discount = getCurrentDiscount();
+            const tax = getCurrentTax();
+            return subtotal - discount + tax;
+        }
+
+        // Actualizar estadísticas de ventas
+        function updateSalesStats() {
+            const today = new Date().toDateString();
+            const todaySales = salesHistory.filter(sale => 
+                new Date(sale.date).toDateString() === today
+            );
+
+            const todaySalesCount = todaySales.length;
+            const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+            const averageSale = todaySalesCount > 0 ? todayRevenue / todaySalesCount : 0;
+
+            document.getElementById('todaySalesCount').textContent = todaySalesCount;
+            document.getElementById('todayRevenue').textContent = `$${todayRevenue.toFixed(2)}`;
+            document.getElementById('averageSale').textContent = `$${averageSale.toFixed(2)}`;
+        }
+
+        // Renderizar historial de ventas
+        function renderSalesHistory() {
+            const tbody = document.getElementById('salesHistory');
+            const recentSales = salesHistory.slice(0, 10); // Últimas 10 ventas
+
+            tbody.innerHTML = recentSales.map(sale => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 12px; color: #fff; font-weight: 600;">${sale.id}</td>
+                    <td style="padding: 12px; color: rgba(255,255,255,0.8);">${formatDate(sale.date)}</td>
+                    <td style="padding: 12px; color: rgba(255,255,255,0.8);">${sale.customer}</td>
+                    <td style="padding: 12px; color: #4ecdc4; font-weight: 600; text-align: right;">$${sale.total.toFixed(2)}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="background: rgba(78,205,196,0.2); color: #4ecdc4; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                            ${sale.status}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <button onclick="viewSaleDetails('${sale.id}')" style="background: rgba(102,126,234,0.2); color: #667eea; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (recentSales.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="padding: 32px; text-align: center; color: rgba(255,255,255,0.5); font-style: italic;">
+                            No hay ventas registradas aún
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Ver detalles de venta
+        function viewSaleDetails(saleId) {
+            const sale = salesHistory.find(s => s.id === saleId);
+            if (sale) {
+                showReceipt(sale);
+            }
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Funciones de navegación (reutilizadas)
+        function navigateTo(section) {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                alert(`Navegando a: ${section.toUpperCase()}\n\nEsta función se implementará en las siguientes páginas del sistema.`);
+            }, 1000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        // Inicializar aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar historial de ventas
+            const storedSales = localStorage.getItem('aristore_sales');
+            if (storedSales) {
+                salesHistory = JSON.parse(storedSales);
+                // Determinar el próximo ID de venta
+                if (salesHistory.length > 0) {
+                    const lastId = Math.max(...salesHistory.map(s => parseInt(s.id.split('-')[1])));
+                    currentSaleId = lastId + 1;
+                }
+            }
+
+            // Inicializar componentes
+            initializeProducts();
+            setupSearch();
+            setupDiscount();
+            updateSalesStats();
+            renderSalesHistory();
+
+            console.log('AriStore Sales Module v1.0 - Sistema de Ventas Profesional');
+        });
+
+        // Manejo de errores de imágenes
+        document.addEventListener('DOMContentLoaded', function() {
+            const logo = document.querySelector('.logo');
+            if (logo) {
+                logo.onerror = function() {
+                    this.style.display = 'none';
+                };
+            }
+        });
+    </script>
+</body>
+</html>
