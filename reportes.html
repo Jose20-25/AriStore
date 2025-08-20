@@ -17,31 +17,57 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="header-left">
-                <a href="index.html" class="back-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    Volver al Dashboard
-                </a>
-                <div class="page-title">
-                    <div class="page-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div>
-                        <h1>Reportes y Análisis</h1>
-                        <p>Análisis detallado del rendimiento del negocio</p>
-                    </div>
+            <div class="logo-container">
+                <img src="logos/aristore.png" alt="AriStore Logo" class="logo">
+                <div>
+                    <h1>AriStore</h1>
+                    <p>Módulo de Reportes - Análisis y Métricas</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-secondary" onclick="refreshReports()">
-                    <i class="fas fa-sync-alt"></i>
-                    Actualizar
-                </button>
-                <button class="btn" onclick="exportAllReports()">
-                    <i class="fas fa-download"></i>
-                    Exportar Todo
-                </button>
+            
+            <!-- Barra de Navegación -->
+            <div class="navbar">
+                <a href="index.html" class="nav-item">
+                    <i class="nav-icon fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="inventario.html" class="nav-item">
+                    <i class="nav-icon inventory fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="ventas.html" class="nav-item">
+                    <i class="nav-icon sales fas fa-cash-register"></i>
+                    <span>Ventas</span>
+                </a>
+                <a href="clientes.html" class="nav-item">
+                    <i class="nav-icon customers fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="proveedores.html" class="nav-item">
+                    <i class="nav-icon suppliers fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="nav-icon reports fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+                <a href="configuracion.html" class="nav-item">
+                    <i class="nav-icon settings fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
             </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="quick-actions-header">
+            <button class="btn btn-secondary" onclick="refreshReports()">
+                <i class="fas fa-sync-alt"></i>
+                Actualizar
+            </button>
+            <button class="btn" onclick="exportAllReports()">
+                <i class="fas fa-download"></i>
+                Exportar Todo
+            </button>
         </div>
 
         <!-- Período de Análisis -->
@@ -1338,5 +1364,32 @@
             }
         }
     </style>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzsn9shEOuhQ1ez2_xzRsHHUPXUZeCyyo",
+            authDomain: "arisoft-49e7c.firebaseapp.com",
+            projectId: "arisoft-49e7c",
+            storageBucket: "arisoft-49e7c.firebasestorage.app",
+            messagingSenderId: "128011827798",
+            appId: "1:128011827798:web:49da366cc846a6e40959f7",
+            measurementId: "G-MQ58NER7Q6"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        
+        console.log('Firebase Analytics inicializado en módulo Reportes');
+    </script>
 </body>
 </html>
