@@ -1746,9 +1746,15 @@
             const outOfStock = products.filter(product => product.stock === 0).length;
 
             document.getElementById('totalProducts').textContent = totalProducts.toLocaleString();
-            document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
+            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
             document.getElementById('lowStock').textContent = lowStock;
             document.getElementById('outOfStock').textContent = outOfStock;
+            
+            console.log('📊 Estadísticas actualizadas:');
+            console.log('  - Total unidades:', totalProducts);
+            console.log('  - Valor inventario: $', totalValue.toFixed(2));
+            console.log('  - Stock bajo:', lowStock);
+            console.log('  - Agotados:', outOfStock);
         }
 
         function closeProductModal() {
