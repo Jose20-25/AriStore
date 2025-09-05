@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AriStore - Sistema de Ventas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .sales-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .cart-section {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            height: fit-content;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .product-price {
+            color: #007bff;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .cart-total {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .sales-history {
+            margin-top: 40px;
+        }
+
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .sales-table th,
+        .sales-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .sales-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-store"></i> AriStore - Sistema de Ventas</h1>
+            <p>Sistema de punto de venta moderno y eficiente</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sales-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2><i class="fas fa-shopping-cart"></i> Nueva Venta</h2>
+                    <button class="btn btn-primary" onclick="showSaleModal()">
+                        <i class="fas fa-plus"></i> Completar Venta
+                    </button>
+                </div>
+
+                <input type="text" class="search-box" id="productSearch" placeholder="🔍 Buscar productos...">
+
+                <div class="product-grid" id="productGrid">
+                    <!-- Los productos se cargarán dinámicamente -->
+                </div>
+
+                <!-- Historial de Ventas -->
+                <div class="sales-history">
+                    <h2><i class="fas fa-history"></i> Historial de Ventas</h2>
+                    <div id="salesHistory">
+                        <!-- Las ventas se cargarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="cart-section">
+                <h3><i class="fas fa-shopping-bag"></i> Carrito de Compras</h3>
+                <div id="cartItems">
+                    <!-- Los items del carrito se mostrarán aquí -->
+                </div>
+                
+                <div class="cart-total" id="cartTotal">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                        <span>IVA (18%):</span>
+                        <span id="tax">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-top: 15px; padding-top: 15px; border-top: 2px solid #dee2e6;">
+                        <span>Total:</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" style="width: 100%; margin-top: 20px;" onclick="showSaleModal()" id="checkoutBtn" disabled>
+                    <i class="fas fa-credit-card"></i> Procesar Venta
+                </button>
+
+                <button class="btn" style="width: 100%; margin-top: 10px; background: #6c757d; color: white;" onclick="clearCart()">
+                    <i class="fas fa-trash"></i> Limpiar Carrito
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Venta -->
+    <div id="saleModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3><i class="fas fa-receipt"></i> Completar Venta</h3>
+                <button onclick="closeSaleModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label for="customerName">Cliente:</label>
+                <input type="text" id="customerName" placeholder="Nombre del cliente" value="Cliente General">
+            </div>
+
+            <div class="form-group">
+                <label for="paymentMethod">Método de Pago:</label>
+                <select id="paymentMethod">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                </select>
+            </div>
+
+            <div class="cart-total">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <span id="modalSubtotal">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                    <span>IVA (18%):</span>
+                    <span id="modalTax">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-top: 15px; padding-top: 15px; border-top: 2px solid #dee2e6;">
+                    <span>Total a Pagar:</span>
+                    <span id="modalTotal">$0.00</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="btn btn-success" style="flex: 1;" onclick="completeSale()">
+                    <i class="fas fa-check"></i> Confirmar Venta
+                </button>
+                <button class="btn" style="flex: 1; background: #6c757d; color: white;" onclick="closeSaleModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // ============= SISTEMA DE VENTAS ARISTORE =============
+        console.log('🚀 Inicializando AriStore - Sistema de Ventas');
+
+        // Variables globales
+        let cart = [];
+        let products = [];
+        let sales = [];
+        let saleCounter = 1001;
+
+        // Claves de almacenamiento
+        const STORAGE_KEYS = {
+            products: 'aristore_products_v2',
+            sales: 'aristore_sales_v2',
+            counter: 'aristore_counter_v2'
+        };
+
+        // ============= FUNCIONES DE PERSISTENCIA =============
+
+        function saveToStorage(key, data) {
+            try {
+                const jsonData = JSON.stringify(data);
+                localStorage.setItem(key, jsonData);
+                console.log(`✅ Guardado en ${key}:`, data.length || 'objeto');
+                return true;
+            } catch (error) {
+                console.error(`❌ Error guardando ${key}:`, error);
+                showNotification('Error al guardar datos', 'error');
+                return false;
+            }
+        }
+
+        function loadFromStorage(key, defaultValue = []) {
+            try {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    console.log(`✅ Cargado de ${key}:`, parsed.length || 'objeto');
+                    return parsed;
+                }
+                console.log(`📋 No hay datos en ${key}, usando valor por defecto`);
+                return defaultValue;
+            } catch (error) {
+                console.error(`❌ Error cargando ${key}:`, error);
+                return defaultValue;
+            }
+        }
+
+        // ============= GESTIÓN DE PRODUCTOS =============
+
+        function initializeProducts() {
+            products = loadFromStorage(STORAGE_KEYS.products, []);
+            
+            if (products.length === 0) {
+                console.log('📦 Creando productos de ejemplo...');
+                products = [
+                    {
+                        id: 1,
+                        name: 'Laptop Dell Inspiron',
+                        price: 15000,
+                        stock: 5,
+                        category: 'Computadoras'
+                    },
+                    {
+                        id: 2,
+                        name: 'Mouse Logitech',
+                        price: 450,
+                        stock: 20,
+                        category: 'Accesorios'
+                    },
+                    {
+                        id: 3,
+                        name: 'Teclado Mecánico',
+                        price: 1200,
+                        stock: 8,
+                        category: 'Accesorios'
+                    },
+                    {
+                        id: 4,
+                        name: 'Monitor 24" Samsung',
+                        price: 3500,
+                        stock: 12,
+                        category: 'Monitores'
+                    },
+                    {
+                        id: 5,
+                        name: 'Auriculares Sony',
+                        price: 2800,
+                        stock: 15,
+                        category: 'Audio'
+                    }
+                ];
+                saveToStorage(STORAGE_KEYS.products, products);
+            }
+            
+            renderProducts();
+        }
+
+        function renderProducts(searchTerm = '') {
+            const productGrid = document.getElementById('productGrid');
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.category.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredProducts.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fas fa-search"></i>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta con otro término de búsqueda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            productGrid.innerHTML = filteredProducts.map(product => `
+                <div class="product-card">
+                    <h3>${product.name}</h3>
+                    <p style="color: #6c757d; margin-bottom: 10px;">${product.category}</p>
+                    <div class="product-price">$${product.price.toLocaleString()}</div>
+                    <p style="color: ${product.stock > 0 ? '#28a745' : '#dc3545'}; margin-bottom: 15px;">
+                        <i class="fas fa-box"></i> Stock: ${product.stock}
+                    </p>
+                    <button class="btn btn-primary" style="width: 100%;" 
+                            onclick="addToCart(${product.id})" 
+                            ${product.stock === 0 ? 'disabled' : ''}>
+                        <i class="fas fa-plus"></i> Agregar al Carrito
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // ============= GESTIÓN DEL CARRITO =============
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock === 0) {
+                showNotification('Producto no disponible', 'error');
+                return;
+            }
+
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                if (cartItem.quantity < product.stock) {
+                    cartItem.quantity++;
+                    showNotification(`${product.name} agregado al carrito`, 'success');
+                } else {
+                    showNotification('Stock insuficiente', 'error');
+                    return;
+                }
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+                showNotification(`${product.name} agregado al carrito`, 'success');
+            }
+
+            renderCart();
+            updateCartTotal();
+        }
+
+        function removeFromCart(productId) {
+            const index = cart.findIndex(item => item.id === productId);
+            if (index > -1) {
+                cart.splice(index, 1);
+                renderCart();
+                updateCartTotal();
+                showNotification('Producto eliminado del carrito', 'success');
+            }
+        }
+
+        function updateQuantity(productId, change) {
+            const cartItem = cart.find(item => item.id === productId);
+            const product = products.find(p => p.id === productId);
+            
+            if (cartItem && product) {
+                const newQuantity = cartItem.quantity + change;
+                if (newQuantity > 0 && newQuantity <= product.stock) {
+                    cartItem.quantity = newQuantity;
+                    renderCart();
+                    updateCartTotal();
+                } else if (newQuantity <= 0) {
+                    removeFromCart(productId);
+                }
+            }
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h4>Carrito vacío</h4>
+                        <p>Agrega productos para comenzar</p>
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+                return;
+            }
+
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="color: #6c757d;">$${item.price.toLocaleString()} c/u</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button onclick="updateQuantity(${item.id}, -1)" style="background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span style="font-weight: bold; min-width: 30px; text-align: center;">${item.quantity}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)" style="background: #28a745; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button onclick="removeFromCart(${item.id})" style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            checkoutBtn.disabled = false;
+        }
+
+        function updateCartTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.18;
+            const total = subtotal + tax;
+
+            document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString()}`;
+            document.getElementById('tax').textContent = `$${tax.toLocaleString()}`;
+            document.getElementById('total').textContent = `$${total.toLocaleString()}`;
+
+            // Actualizar también el modal
+            document.getElementById('modalSubtotal').textContent = `$${subtotal.toLocaleString()}`;
+            document.getElementById('modalTax').textContent = `$${tax.toLocaleString()}`;
+            document.getElementById('modalTotal').textContent = `$${total.toLocaleString()}`;
+        }
+
+        function clearCart() {
+            cart = [];
+            renderCart();
+            updateCartTotal();
+            showNotification('Carrito limpiado', 'success');
+        }
+
+        // ============= GESTIÓN DE VENTAS =============
+
+        function initializeSales() {
+            sales = loadFromStorage(STORAGE_KEYS.sales, []);
+            saleCounter = loadFromStorage(STORAGE_KEYS.counter, 1001);
+            renderSalesHistory();
+        }
+
+        function showSaleModal() {
+            if (cart.length === 0) {
+                showNotification('El carrito está vacío', 'error');
+                return;
+            }
+
+            document.getElementById('saleModal').style.display = 'block';
+            updateCartTotal(); // Actualizar totales en el modal
+        }
+
+        function closeSaleModal() {
+            document.getElementById('saleModal').style.display = 'none';
+        }
+
+        function completeSale() {
+            if (cart.length === 0) {
+                showNotification('El carrito está vacío', 'error');
+                return;
+            }
+
+            const customerName = document.getElementById('customerName').value || 'Cliente General';
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.18;
+            const total = subtotal + tax;
+
+            const sale = {
+                id: Date.now(),
+                saleNumber: `V-${saleCounter}`,
+                date: new Date().toISOString(),
+                customer: customerName,
+                paymentMethod: paymentMethod,
+                items: [...cart],
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                status: 'completed'
+            };
+
+            // Actualizar stock
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    product.stock -= item.quantity;
+                }
+            });
+
+            // Guardar datos
+            sales.unshift(sale); // Agregar al inicio
+            saleCounter++;
+
+            saveToStorage(STORAGE_KEYS.sales, sales);
+            saveToStorage(STORAGE_KEYS.products, products);
+            saveToStorage(STORAGE_KEYS.counter, saleCounter);
+
+            // Limpiar carrito y cerrar modal
+            clearCart();
+            closeSaleModal();
+
+            // Actualizar interfaces
+            renderProducts();
+            renderSalesHistory();
+
+            showNotification(`¡Venta ${sale.saleNumber} completada exitosamente!`, 'success');
+
+            console.log('✅ Venta completada:', sale);
+        }
+
+        function renderSalesHistory() {
+            const salesHistory = document.getElementById('salesHistory');
+
+            if (sales.length === 0) {
+                salesHistory.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h4>No hay ventas registradas</h4>
+                        <p>Las ventas aparecerán aquí una vez realizadas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            salesHistory.innerHTML = `
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>N° Venta</th>
+                            <th>Cliente</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Pago</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sales.slice(0, 10).map(sale => `
+                            <tr>
+                                <td>${new Date(sale.date).toLocaleDateString('es-ES')}</td>
+                                <td><strong>${sale.saleNumber}</strong></td>
+                                <td>${sale.customer}</td>
+                                <td>${sale.items.reduce((sum, item) => sum + item.quantity, 0)} productos</td>
+                                <td style="color: #28a745; font-weight: bold;">$${sale.total.toLocaleString()}</td>
+                                <td>
+                                    <span style="padding: 4px 8px; background: #e9ecef; border-radius: 4px; font-size: 12px;">
+                                        ${sale.paymentMethod}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="padding: 4px 8px; background: #d4edda; color: #155724; border-radius: 4px; font-size: 12px;">
+                                        Completada
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                ${sales.length > 10 ? `
+                    <div style="text-align: center; margin-top: 20px; color: #6c757d;">
+                        Mostrando las últimas 10 ventas de ${sales.length} total
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // ============= UTILIDADES =============
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============= EVENTOS =============
+
+        document.getElementById('productSearch').addEventListener('input', function(e) {
+            renderProducts(e.target.value);
+        });
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('saleModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSaleModal();
+            }
+        });
+
+        // ============= INICIALIZACIÓN =============
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando aplicación...');
+            
+            initializeProducts();
+            initializeSales();
+            renderCart();
+            updateCartTotal();
+            
+            console.log('✅ Aplicación inicializada correctamente');
+            console.log('📊 Estado inicial:', {
+                productos: products.length,
+                ventas: sales.length,
+                carrito: cart.length
+            });
+        });
+
+        // ============= FUNCIONES DE DEBUG =============
+
+        window.debugSystem = function() {
+            console.log('🔍 === DIAGNÓSTICO DEL SISTEMA ===');
+            console.log('📦 Productos:', products.length);
+            console.log('🛒 Carrito:', cart.length);
+            console.log('💰 Ventas:', sales.length);
+            console.log('🔑 Keys en localStorage:', Object.keys(localStorage).filter(k => k.includes('aristore')));
+            
+            // Verificar datos en localStorage
+            Object.values(STORAGE_KEYS).forEach(key => {
+                const data = localStorage.getItem(key);
+                console.log(`📋 ${key}:`, data ? `${data.length} caracteres` : 'vacío');
+            });
+        };
+
+        window.testSale = function() {
+            console.log('🧪 Creando venta de prueba...');
+            
+            // Limpiar carrito actual
+            cart = [];
+            
+            // Agregar productos de prueba
+            addToCart(1);
+            addToCart(2);
+            
+            console.log('✅ Productos agregados al carrito');
+            console.log('🛒 Carrito actual:', cart);
+            
+            showNotification('Venta de prueba creada. Complétala desde el modal.', 'success');
+        };
+
+        window.clearAllData = function() {
+            if (confirm('¿Estás seguro de que quieres eliminar todos los datos?')) {
+                Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+                location.reload();
+            }
+        };
+
+        console.log('✅ Sistema de Ventas AriStore cargado completamente');
+    </script>
+</body>
+</html>

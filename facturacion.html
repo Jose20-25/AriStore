@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación - AriStore ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #ddd transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: #ddd;
+            border-radius: 3px;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+            border-radius: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 32px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #4f46e5;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #fbbf24;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.1);
+            color: #475569;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        /* Invoice specific styles */
+        .invoice-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .invoice-items {
+            margin: 24px 0;
+        }
+
+        .invoice-total {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .invoice-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-header {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="sidebar-logo">
+                    <img src="logos/aristore.png" alt="AriStore Logo">
+                    <span>AriStore ERP</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Análisis</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión</div>
+                    <a href="ventas.html" class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Ventas</span>
+                    </a>
+                    <a href="inventario.html" class="nav-item">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventario</span>
+                    </a>
+                    <a href="clientes.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="proveedores.html" class="nav-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Finanzas</div>
+                    <a href="contabilidad.html" class="nav-item">
+                        <i class="fas fa-calculator"></i>
+                        <span>Contabilidad</span>
+                    </a>
+                    <a href="facturacion.html" class="nav-item active">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Facturación</span>
+                    </a>
+                    <a href="reportes.html" class="nav-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reportes</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RRHH</div>
+                    <a href="empleados.html" class="nav-item">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Empleados</span>
+                    </a>
+                    <a href="nomina.html" class="nav-item">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Nómina</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <a href="configuracion.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuración</span>
+                    </a>
+                    <a href="usuarios.html" class="nav-item">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Facturación
+                </h1>
+                <p class="page-subtitle">Gestión de facturas y documentos fiscales</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFacturas">0</div>
+                    <div class="stat-label">Total Facturas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="facturasPendientes">0</div>
+                    <div class="stat-label">Facturas Pendientes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="montoFacturado">$0</div>
+                    <div class="stat-label">Monto Facturado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="montoPendiente">$0</div>
+                    <div class="stat-label">Monto Pendiente</div>
+                </div>
+            </div>
+
+            <!-- Content Card -->
+            <div class="content-card">
+                <div class="toolbar">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Buscar facturas..." id="searchFacturas">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-search"></i>
+                            Buscar
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" onclick="showFacturaModal()">
+                        <i class="fas fa-plus"></i>
+                        Nueva Factura
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>N° Factura</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Vencimiento</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facturasTableBody">
+                            <!-- Las facturas se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nueva Factura -->
+    <div class="modal" id="facturaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nueva Factura</h2>
+                <button class="modal-close" onclick="closeFacturaModal()">&times;</button>
+            </div>
+            
+            <div class="invoice-header">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Cliente</label>
+                        <select class="form-input" id="facturaCliente" required>
+                            <option value="">Seleccionar cliente...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Método de Pago</label>
+                        <select class="form-input" id="facturaMetodoPago">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="credito">Crédito</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Número de Factura</label>
+                        <input type="text" class="form-input" id="facturaNumero" readonly>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-input" id="facturaFecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vencimiento</label>
+                            <input type="date" class="form-input" id="facturaVencimiento">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-items">
+                <h3 style="margin-bottom: 16px;">Items de la Factura</h3>
+                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                    <select class="form-input" id="productoSelect" style="flex: 2;">
+                        <option value="">Seleccionar producto...</option>
+                    </select>
+                    <input type="number" class="form-input" id="cantidadInput" placeholder="Cantidad" min="1" style="flex: 1;">
+                    <button type="button" class="btn btn-secondary" onclick="addItem()">
+                        <i class="fas fa-plus"></i>
+                        Agregar
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facturaItemsBody">
+                            <!-- Items se agregarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="invoice-total">
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; max-width: 300px; margin-left: auto;">
+                    <span>Subtotal:</span>
+                    <span id="facturaSubtotal">$0.00</span>
+                    
+                    <span>IVA (16%):</span>
+                    <span id="facturaIVA">$0.00</span>
+                    
+                    <strong style="border-top: 2px solid #e5e7eb; padding-top: 8px;">Total:</strong>
+                    <strong id="facturaTotal" style="border-top: 2px solid #e5e7eb; padding-top: 8px;">$0.00</strong>
+                </div>
+            </div>
+
+            <div class="invoice-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeFacturaModal()">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="saveFactura()">
+                    <i class="fas fa-save"></i>
+                    Guardar Factura
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Factura -->
+    <div class="modal" id="verFacturaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Factura #<span id="viewFacturaNumero"></span></h2>
+                <button class="modal-close" onclick="closeVerFacturaModal()">&times;</button>
+            </div>
+            <div id="facturaViewer">
+                <!-- Contenido de la factura se cargará aquí -->
+            </div>
+            <div class="invoice-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeVerFacturaModal()">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="printFactura()">
+                    <i class="fas fa-print"></i>
+                    Imprimir
+                </button>
+                <button type="button" class="btn btn-success" onclick="downloadFactura()">
+                    <i class="fas fa-download"></i>
+                    Descargar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let facturas = JSON.parse(localStorage.getItem('aristore_facturas')) || [];
+        let clientes = JSON.parse(localStorage.getItem('aristore_clientes')) || [];
+        let productos = JSON.parse(localStorage.getItem('aristore_products')) || [];
+        let facturaItems = [];
+        let nextFacturaNumber = localStorage.getItem('aristore_next_factura_number') || 1;
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFacturas();
+            updateStats();
+            populateSelects();
+            generateFacturaNumber();
+            
+            // Establecer fecha actual por defecto
+            document.getElementById('facturaFecha').value = new Date().toISOString().split('T')[0];
+        });
+
+        // Cargar facturas
+        function loadFacturas() {
+            const tbody = document.getElementById('facturasTableBody');
+            tbody.innerHTML = '';
+
+            facturas.forEach((factura, index) => {
+                const cliente = clientes.find(c => c.id == factura.clienteId);
+                const row = `
+                    <tr>
+                        <td>${factura.numero}</td>
+                        <td>${cliente ? cliente.nombre : 'Cliente eliminado'}</td>
+                        <td>${new Date(factura.fecha).toLocaleDateString()}</td>
+                        <td>${factura.vencimiento ? new Date(factura.vencimiento).toLocaleDateString() : '-'}</td>
+                        <td>$${factura.total.toLocaleString()}</td>
+                        <td>
+                            <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; ${factura.estado === 'pagado' ? 'background: #dcfce7; color: #16a34a;' : factura.estado === 'pendiente' ? 'background: #fef3c7; color: #d97706;' : 'background: #fef2f2; color: #dc2626;'}">
+                                ${factura.estado === 'pagado' ? 'Pagado' : factura.estado === 'pendiente' ? 'Pendiente' : 'Vencido'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; margin-right: 8px;" onclick="viewFactura(${index})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; margin-right: 8px;" onclick="markAsPaid(${index})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; background: #fef2f2; color: #dc2626;" onclick="deleteFactura(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const totalFacturas = facturas.length;
+            const facturasPendientes = facturas.filter(f => f.estado === 'pendiente').length;
+            const montoFacturado = facturas.reduce((sum, f) => sum + f.total, 0);
+            const montoPendiente = facturas.filter(f => f.estado === 'pendiente').reduce((sum, f) => sum + f.total, 0);
+
+            document.getElementById('totalFacturas').textContent = totalFacturas;
+            document.getElementById('facturasPendientes').textContent = facturasPendientes;
+            document.getElementById('montoFacturado').textContent = `$${montoFacturado.toLocaleString()}`;
+            document.getElementById('montoPendiente').textContent = `$${montoPendiente.toLocaleString()}`;
+        }
+
+        // Poblar selects
+        function populateSelects() {
+            const clienteSelect = document.getElementById('facturaCliente');
+            const productoSelect = document.getElementById('productoSelect');
+            
+            clienteSelect.innerHTML = '<option value="">Seleccionar cliente...</option>';
+            clientes.forEach(cliente => {
+                clienteSelect.innerHTML += `<option value="${cliente.id}">${cliente.nombre}</option>`;
+            });
+            
+            productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
+            productos.forEach(producto => {
+                productoSelect.innerHTML += `<option value="${producto.id}" data-precio="${producto.precioVenta}">${producto.nombre} - $${producto.precioVenta}</option>`;
+            });
+        }
+
+        // Generar número de factura
+        function generateFacturaNumber() {
+            document.getElementById('facturaNumero').value = `FAC-${String(nextFacturaNumber).padStart(6, '0')}`;
+        }
+
+        // Mostrar modal nueva factura
+        function showFacturaModal() {
+            facturaItems = [];
+            updateFacturaItems();
+            updateFacturaTotal();
+            generateFacturaNumber();
+            document.getElementById('facturaModal').classList.add('active');
+        }
+
+        // Cerrar modal factura
+        function closeFacturaModal() {
+            document.getElementById('facturaModal').classList.remove('active');
+            document.getElementById('facturaCliente').value = '';
+            document.getElementById('facturaMetodoPago').value = 'efectivo';
+            document.getElementById('facturaVencimiento').value = '';
+            facturaItems = [];
+            updateFacturaItems();
+        }
+
+        // Agregar item a la factura
+        function addItem() {
+            const productoSelect = document.getElementById('productoSelect');
+            const cantidadInput = document.getElementById('cantidadInput');
+            
+            if (!productoSelect.value || !cantidadInput.value) {
+                alert('Por favor selecciona un producto y especifica la cantidad');
+                return;
+            }
+
+            const productoId = productoSelect.value;
+            const cantidad = parseInt(cantidadInput.value);
+            const producto = productos.find(p => p.id == productoId);
+            
+            if (!producto) {
+                alert('Producto no encontrado');
+                return;
+            }
+
+            const item = {
+                productoId: productoId,
+                nombre: producto.nombre,
+                cantidad: cantidad,
+                precio: producto.precioVenta,
+                total: cantidad * producto.precioVenta
+            };
+
+            facturaItems.push(item);
+            updateFacturaItems();
+            updateFacturaTotal();
+            
+            // Limpiar campos
+            productoSelect.value = '';
+            cantidadInput.value = '';
+        }
+
+        // Actualizar items de la factura
+        function updateFacturaItems() {
+            const tbody = document.getElementById('facturaItemsBody');
+            tbody.innerHTML = '';
+
+            facturaItems.forEach((item, index) => {
+                const row = `
+                    <tr>
+                        <td>${item.nombre}</td>
+                        <td>${item.cantidad}</td>
+                        <td>$${item.precio.toLocaleString()}</td>
+                        <td>$${item.total.toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; background: #fef2f2; color: #dc2626;" onclick="removeItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Remover item
+        function removeItem(index) {
+            facturaItems.splice(index, 1);
+            updateFacturaItems();
+            updateFacturaTotal();
+        }
+
+        // Actualizar total de la factura
+        function updateFacturaTotal() {
+            const subtotal = facturaItems.reduce((sum, item) => sum + item.total, 0);
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+
+            document.getElementById('facturaSubtotal').textContent = `$${subtotal.toLocaleString()}`;
+            document.getElementById('facturaIVA').textContent = `$${iva.toLocaleString()}`;
+            document.getElementById('facturaTotal').textContent = `$${total.toLocaleString()}`;
+        }
+
+        // Guardar factura
+        function saveFactura() {
+            if (!document.getElementById('facturaCliente').value) {
+                alert('Por favor selecciona un cliente');
+                return;
+            }
+
+            if (facturaItems.length === 0) {
+                alert('Por favor agrega al menos un item a la factura');
+                return;
+            }
+
+            const subtotal = facturaItems.reduce((sum, item) => sum + item.total, 0);
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+
+            const factura = {
+                numero: document.getElementById('facturaNumero').value,
+                clienteId: document.getElementById('facturaCliente').value,
+                fecha: document.getElementById('facturaFecha').value,
+                vencimiento: document.getElementById('facturaVencimiento').value,
+                metodoPago: document.getElementById('facturaMetodoPago').value,
+                items: [...facturaItems],
+                subtotal: subtotal,
+                iva: iva,
+                total: total,
+                estado: 'pendiente',
+                fechaCreacion: new Date().toISOString()
+            };
+
+            facturas.push(factura);
+            localStorage.setItem('aristore_facturas', JSON.stringify(facturas));
+            
+            // Incrementar número de factura
+            nextFacturaNumber++;
+            localStorage.setItem('aristore_next_factura_number', nextFacturaNumber);
+
+            loadFacturas();
+            updateStats();
+            closeFacturaModal();
+            
+            alert('Factura creada exitosamente');
+        }
+
+        // Ver factura
+        function viewFactura(index) {
+            const factura = facturas[index];
+            const cliente = clientes.find(c => c.id == factura.clienteId);
+            
+            document.getElementById('viewFacturaNumero').textContent = factura.numero;
+            
+            const facturaHTML = `
+                <div style="padding: 20px; background: white; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px;">
+                        <div>
+                            <h3 style="color: #1e293b; margin-bottom: 16px;">DATOS DEL CLIENTE</h3>
+                            <p><strong>Nombre:</strong> ${cliente ? cliente.nombre : 'Cliente eliminado'}</p>
+                            <p><strong>Email:</strong> ${cliente ? cliente.email : '-'}</p>
+                            <p><strong>Teléfono:</strong> ${cliente ? cliente.telefono : '-'}</p>
+                        </div>
+                        <div>
+                            <h3 style="color: #1e293b; margin-bottom: 16px;">DATOS DE LA FACTURA</h3>
+                            <p><strong>Número:</strong> ${factura.numero}</p>
+                            <p><strong>Fecha:</strong> ${new Date(factura.fecha).toLocaleDateString()}</p>
+                            <p><strong>Vencimiento:</strong> ${factura.vencimiento ? new Date(factura.vencimiento).toLocaleDateString() : '-'}</p>
+                            <p><strong>Método de Pago:</strong> ${factura.metodoPago}</p>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: #1e293b; margin-bottom: 16px;">ITEMS</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                        <thead>
+                            <tr style="background: #f8fafc;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">Producto</th>
+                                <th style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Cantidad</th>
+                                <th style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Precio</th>
+                                <th style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${factura.items.map(item => `
+                                <tr>
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">${item.nombre}</td>
+                                    <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">${item.cantidad}</td>
+                                    <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">$${item.precio.toLocaleString()}</td>
+                                    <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">$${item.total.toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="text-align: right;">
+                        <p><strong>Subtotal:</strong> $${factura.subtotal.toLocaleString()}</p>
+                        <p><strong>IVA (16%):</strong> $${factura.iva.toLocaleString()}</p>
+                        <p style="font-size: 18px; margin-top: 8px; padding-top: 8px; border-top: 2px solid #e5e7eb;"><strong>TOTAL: $${factura.total.toLocaleString()}</strong></p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('facturaViewer').innerHTML = facturaHTML;
+            document.getElementById('verFacturaModal').classList.add('active');
+        }
+
+        // Cerrar modal ver factura
+        function closeVerFacturaModal() {
+            document.getElementById('verFacturaModal').classList.remove('active');
+        }
+
+        // Marcar como pagado
+        function markAsPaid(index) {
+            if (confirm('¿Marcar esta factura como pagada?')) {
+                facturas[index].estado = 'pagado';
+                facturas[index].fechaPago = new Date().toISOString();
+                localStorage.setItem('aristore_facturas', JSON.stringify(facturas));
+                loadFacturas();
+                updateStats();
+            }
+        }
+
+        // Eliminar factura
+        function deleteFactura(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta factura?')) {
+                facturas.splice(index, 1);
+                localStorage.setItem('aristore_facturas', JSON.stringify(facturas));
+                loadFacturas();
+                updateStats();
+            }
+        }
+
+        // Imprimir factura
+        function printFactura() {
+            window.print();
+        }
+
+        // Descargar PDF (simulado)
+        function downloadFactura() {
+            alert('Función de descarga PDF en desarrollo');
+        }
+
+        // Búsqueda de facturas
+        document.getElementById('searchFacturas').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredFacturas = facturas.filter(factura => {
+                const cliente = clientes.find(c => c.id == factura.clienteId);
+                return factura.numero.toLowerCase().includes(searchTerm) ||
+                       (cliente && cliente.nombre.toLowerCase().includes(searchTerm));
+            });
+
+            // Renderizar facturas filtradas (implementación simplificada)
+            loadFacturas();
+        });
+    </script>
+</body>
+</html>

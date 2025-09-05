@@ -3,1595 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AriStore - Configuración del Sistema</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
+    <title>Configuración - AriStore ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar (compacto) */
+        .sidebar { width: 280px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-right: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1); position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .sidebar-logo { display: flex; align-items: center; text-decoration: none; color: white; font-weight: 700; font-size: 20px; }
+        .sidebar-logo img { width: 40px; height: 40px; margin-right: 12px; border-radius: 8px; }
+        .sidebar-nav { padding: 20px 0; }
+        .nav-section { margin-bottom: 32px; }
+        .nav-section-title { padding: 0 20px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 20px; text-decoration: none; color: #475569; font-weight: 500; transition: all 0.3s ease; position: relative; }
+        .nav-item:hover { background: rgba(102, 126, 234, 0.1); color: #4f46e5; transform: translateX(4px); }
+        .nav-item.active { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; font-weight: 600; }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #fbbf24; border-radius: 0 4px 4px 0; }
+        .nav-item i { width: 20px; margin-right: 12px; font-size: 16px; }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; padding: 32px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); min-height: 100vh; }
+        .page-header { background: rgba(255, 255, 255, 0.95); padding: 32px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 32px; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .page-title { font-size: 32px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .page-subtitle { color: #64748b; font-size: 16px; }
+        .content-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 24px; }
+        
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; font-size: 14px; }
+        .btn-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: white; }
+        
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .config-section { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .config-title { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; color: #374151; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
+        .form-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .form-select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; }
+        .form-switch { display: flex; align-items: center; gap: 12px; }
+        .switch { position: relative; width: 50px; height: 26px; background: #d1d5db; border-radius: 13px; cursor: pointer; transition: all 0.3s ease; }
+        .switch.active { background: #4f46e5; }
+        .switch-slider { position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+        .switch.active .switch-slider { transform: translateX(24px); }
+        
+        .backup-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 12px; }
+        .backup-info { flex: 1; }
+        .backup-date { font-weight: 500; color: #1e293b; }
+        .backup-size { font-size: 14px; color: #64748b; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 16px; }
+            .config-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo-container">
-                <img src="logos/aristore.png" alt="AriStore Logo" class="logo">
-                <div>
-                    <h1>AriStore</h1>
-                    <p>Módulo de Configuración - Administración del Sistema</p>
-                </div>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="sidebar-logo">
+                    <img src="logos/aristore.png" alt="AriStore Logo">
+                    <span>AriStore ERP</span>
+                </a>
             </div>
             
-            <!-- Barra de Navegación -->
-            <div class="navbar">
-                <a href="index.html" class="nav-item">
-                    <i class="nav-icon fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="inventario.html" class="nav-item">
-                    <i class="nav-icon inventory fas fa-boxes"></i>
-                    <span>Inventario</span>
-                </a>
-                <a href="ventas.html" class="nav-item">
-                    <i class="nav-icon sales fas fa-cash-register"></i>
-                    <span>Ventas</span>
-                </a>
-                <a href="clientes.html" class="nav-item">
-                    <i class="nav-icon customers fas fa-users"></i>
-                    <span>Clientes</span>
-                </a>
-                <a href="proveedores.html" class="nav-item">
-                    <i class="nav-icon suppliers fas fa-truck"></i>
-                    <span>Proveedores</span>
-                </a>
-                <a href="reportes.html" class="nav-item">
-                    <i class="nav-icon reports fas fa-chart-bar"></i>
-                    <span>Reportes</span>
-                </a>
-                <a href="#" class="nav-item active">
-                    <i class="nav-icon settings fas fa-cog"></i>
-                    <span>Configuración</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Acciones Rápidas -->
-        <div class="quick-actions-header">
-            <button class="btn btn-secondary" onclick="resetAllSettings()">
-                <i class="fas fa-undo"></i>
-                Restablecer
-            </button>
-            <button class="btn" onclick="saveAllSettings()">
-                <i class="fas fa-save"></i>
-                Guardar Todo
-            </button>
-        </div>
-
-        <!-- Navegación de Configuración -->
-        <div class="config-navigation">
-            <button class="config-nav-btn active" data-section="general" onclick="showSection('general')">
-                <i class="fas fa-store"></i>
-                <span>Información General</span>
-            </button>
-            <button class="config-nav-btn" data-section="users" onclick="showSection('users')">
-                <i class="fas fa-users-cog"></i>
-                <span>Usuarios</span>
-            </button>
-            <button class="config-nav-btn" data-section="business" onclick="showSection('business')">
-                <i class="fas fa-building"></i>
-                <span>Datos del Negocio</span>
-            </button>
-            <button class="config-nav-btn" data-section="notifications" onclick="showSection('notifications')">
-                <i class="fas fa-bell"></i>
-                <span>Notificaciones</span>
-            </button>
-            <button class="config-nav-btn" data-section="backup" onclick="showSection('backup')">
-                <i class="fas fa-cloud"></i>
-                <span>Respaldos</span>
-            </button>
-            <button class="config-nav-btn" data-section="advanced" onclick="showSection('advanced')">
-                <i class="fas fa-tools"></i>
-                <span>Avanzado</span>
-            </button>
-        </div>
-
-        <!-- Secciones de Configuración -->
-        <div class="config-content">
-            <!-- Información General -->
-            <div class="config-section active" id="general-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-store"></i> Información General del Sistema</h2>
-                    <p>Configura los datos básicos de tu tienda</p>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="index.html" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Análisis</span></a>
                 </div>
-
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-info-circle"></i>
-                            <h3>Información de la Tienda</h3>
-                        </div>
-                        <form class="config-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="storeName">Nombre de la Tienda</label>
-                                    <input type="text" id="storeName" value="AriStore" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="storeSlogan">Eslogan</label>
-                                    <input type="text" id="storeSlogan" value="Tu tienda de accesorios tecnológicos">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="storePhone">Teléfono</label>
-                                    <input type="tel" id="storePhone" value="+1 (555) 123-4567">
-                                </div>
-                                <div class="form-group">
-                                    <label for="storeEmail">Email</label>
-                                    <input type="email" id="storeEmail" value="contacto@aristore.com">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="storeAddress">Dirección</label>
-                                <textarea id="storeAddress" rows="3">Av. Principal 123, Centro Comercial Plaza, Local 45</textarea>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-palette"></i>
-                            <h3>Personalización Visual</h3>
-                        </div>
-                        <div class="config-options">
-                            <div class="option-group">
-                                <label>Tema del Sistema</label>
-                                <div class="theme-selector">
-                                    <div class="theme-option active" data-theme="dark">
-                                        <div class="theme-preview dark-theme"></div>
-                                        <span>Oscuro</span>
-                                    </div>
-                                    <div class="theme-option" data-theme="light">
-                                        <div class="theme-preview light-theme"></div>
-                                        <span>Claro</span>
-                                    </div>
-                                    <div class="theme-option" data-theme="auto">
-                                        <div class="theme-preview auto-theme"></div>
-                                        <span>Automático</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="option-group">
-                                <label>Color Principal</label>
-                                <div class="color-picker">
-                                    <input type="color" id="primaryColor" value="#4ecdc4">
-                                    <span class="color-label">#4ecdc4</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión</div>
+                    <a href="ventas.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Ventas</span></a>
+                    <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                    <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                    <a href="proveedores.html" class="nav-item"><i class="fas fa-truck"></i><span>Proveedores</span></a>
                 </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Finanzas</div>
+                    <a href="contabilidad.html" class="nav-item"><i class="fas fa-calculator"></i><span>Contabilidad</span></a>
+                    <a href="facturacion.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>Facturación</span></a>
+                    <a href="reportes.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Reportes</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">RRHH</div>
+                    <a href="empleados.html" class="nav-item"><i class="fas fa-user-tie"></i><span>Empleados</span></a>
+                    <a href="nomina.html" class="nav-item"><i class="fas fa-money-check-alt"></i><span>Nómina</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <a href="configuracion.html" class="nav-item active"><i class="fas fa-cog"></i><span>Configuración</span></a>
+                    <a href="usuarios.html" class="nav-item"><i class="fas fa-users-cog"></i><span>Usuarios</span></a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-cog"></i> Configuración del Sistema</h1>
+                <p class="page-subtitle">Gestiona las configuraciones generales y preferencias del sistema</p>
             </div>
 
-            <!-- Usuarios -->
-            <div class="config-section" id="users-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
-                    <p>Administra los usuarios que tienen acceso al sistema</p>
+            <div class="config-grid">
+                <!-- Configuración General -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-building"></i> Información de la Empresa</h3>
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la Empresa</label>
+                        <input type="text" class="form-input" id="empresaNombre" placeholder="AriStore">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RUC/NIT</label>
+                        <input type="text" class="form-input" id="empresaRuc" placeholder="20123456789">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-input" id="empresaDireccion" placeholder="Calle Principal 123">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-input" id="empresaTelefono" placeholder="+51 999 888 777">
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarEmpresa()">Guardar Información</button>
                 </div>
 
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-user-plus"></i>
-                            <h3>Agregar Nuevo Usuario</h3>
-                        </div>
-                        <form class="config-form" onsubmit="addUser(event)">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="userName">Nombre Completo</label>
-                                    <input type="text" id="userName" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="userEmail">Email</label>
-                                    <input type="email" id="userEmail" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="userRole">Rol</label>
-                                    <select id="userRole" required>
-                                        <option value="admin">Administrador</option>
-                                        <option value="manager">Gerente</option>
-                                        <option value="employee">Empleado</option>
-                                        <option value="viewer">Solo Lectura</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="userPassword">Contraseña Temporal</label>
-                                    <input type="password" id="userPassword" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn">
-                                <i class="fas fa-user-plus"></i>
-                                Agregar Usuario
-                            </button>
-                        </form>
+                <!-- Configuración de Facturación -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-file-invoice-dollar"></i> Configuración de Facturación</h3>
+                    <div class="form-group">
+                        <label class="form-label">Moneda</label>
+                        <select class="form-select" id="moneda">
+                            <option value="PEN">Sol Peruano (PEN)</option>
+                            <option value="USD">Dólar Americano (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                        </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">IGV (%)</label>
+                        <input type="number" class="form-input" id="igv" value="18" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Serie de Factura</label>
+                        <input type="text" class="form-input" id="serieFactura" placeholder="F001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Serie de Boleta</label>
+                        <input type="text" class="form-input" id="serieBoleta" placeholder="B001">
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarFacturacion()">Guardar Configuración</button>
+                </div>
 
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-users"></i>
-                            <h3>Usuarios Existentes</h3>
-                        </div>
-                        <div class="users-list" id="usersList">
-                            <!-- Se llenará dinámicamente -->
+                <!-- Configuración de Inventario -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-boxes"></i> Configuración de Inventario</h3>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Control de Stock Automático</span>
+                            <div class="switch" id="stockAutomatico" onclick="toggleSwitch('stockAutomatico')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Alertas de Stock Mínimo</span>
+                            <div class="switch active" id="alertasStock" onclick="toggleSwitch('alertasStock')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock Mínimo por Defecto</label>
+                        <input type="number" class="form-input" id="stockMinimo" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Códigos Automáticos de Producto</span>
+                            <div class="switch active" id="codigosAutomaticos" onclick="toggleSwitch('codigosAutomaticos')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarInventario()">Guardar Configuración</button>
+                </div>
+
+                <!-- Configuración de Seguridad -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-shield-alt"></i> Configuración de Seguridad</h3>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Autenticación de Dos Factores</span>
+                            <div class="switch" id="twoFactor" onclick="toggleSwitch('twoFactor')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Cerrar Sesión Automático</span>
+                            <div class="switch active" id="autoLogout" onclick="toggleSwitch('autoLogout')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tiempo de Sesión (minutos)</label>
+                        <input type="number" class="form-input" id="tiempoSesion" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Log de Auditoría</span>
+                            <div class="switch active" id="auditLog" onclick="toggleSwitch('auditLog')">
+                                <div class="switch-slider"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarSeguridad()">Guardar Configuración</button>
+                </div>
+
+                <!-- Backup y Restauración -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-database"></i> Backup y Restauración</h3>
+                    <div class="form-group">
+                        <button class="btn btn-success" onclick="crearBackup()" style="width: 100%; margin-bottom: 16px;">
+                            <i class="fas fa-download"></i> Crear Backup Completo
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Restaurar desde Archivo</label>
+                        <input type="file" class="form-input" id="archivoBackup" accept=".json">
+                        <button class="btn btn-primary" onclick="restaurarBackup()" style="width: 100%; margin-top: 8px;">
+                            <i class="fas fa-upload"></i> Restaurar Backup
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Backups Automáticos</label>
+                        <div id="listaBackups">
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <div class="backup-date">Backup - 15/01/2024</div>
+                                    <div class="backup-size">2.5 MB</div>
+                                </div>
+                                <button class="btn btn-danger" style="padding: 8px 12px;">Eliminar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Datos del Negocio -->
-            <div class="config-section" id="business-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-building"></i> Configuración del Negocio</h2>
-                    <p>Configura los parámetros comerciales y fiscales</p>
-                </div>
-
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-percent"></i>
-                            <h3>Configuración de Impuestos</h3>
-                        </div>
-                        <form class="config-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="taxRate">Tasa de Impuesto (%)</label>
-                                    <input type="number" id="taxRate" value="16" min="0" max="100" step="0.01">
-                                </div>
-                                <div class="form-group">
-                                    <label for="taxIncluded">Impuesto Incluido en Precios</label>
-                                    <select id="taxIncluded">
-                                        <option value="true">Sí, precios incluyen impuestos</option>
-                                        <option value="false">No, agregar impuestos al total</option>
-                                    </select>
-                                </div>
+                <!-- Configuración de Notificaciones -->
+                <div class="config-section">
+                    <h3 class="config-title"><i class="fas fa-bell"></i> Notificaciones</h3>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Notificaciones de Stock Bajo</span>
+                            <div class="switch active" id="notifStock" onclick="toggleSwitch('notifStock')">
+                                <div class="switch-slider"></div>
                             </div>
-                            <div class="form-group">
-                                <label for="taxNumber">Número de RFC/RUC</label>
-                                <input type="text" id="taxNumber" placeholder="Ej: RFC123456789">
-                            </div>
-                        </form>
+                        </label>
                     </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-coins"></i>
-                            <h3>Configuración de Moneda</h3>
-                        </div>
-                        <form class="config-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="currency">Moneda Principal</label>
-                                    <select id="currency">
-                                        <option value="USD">Dólar Estadounidense (USD)</option>
-                                        <option value="EUR">Euro (EUR)</option>
-                                        <option value="MXN">Peso Mexicano (MXN)</option>
-                                        <option value="COP">Peso Colombiano (COP)</option>
-                                        <option value="ARS">Peso Argentino (ARS)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="currencySymbol">Símbolo</label>
-                                    <input type="text" id="currencySymbol" value="$" maxlength="3">
-                                </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Notificaciones de Ventas</span>
+                            <div class="switch active" id="notifVentas" onclick="toggleSwitch('notifVentas')">
+                                <div class="switch-slider"></div>
                             </div>
-                        </form>
+                        </label>
                     </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>Alertas de Inventario</h3>
-                        </div>
-                        <form class="config-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="lowStockAlert">Alerta de Stock Bajo</label>
-                                    <input type="number" id="lowStockAlert" value="5" min="1">
-                                    <small>Mostrar alerta cuando el stock sea menor o igual a este número</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="criticalStockAlert">Alerta de Stock Crítico</label>
-                                    <input type="number" id="criticalStockAlert" value="2" min="0">
-                                </div>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Notificaciones de Pagos</span>
+                            <div class="switch active" id="notifPagos" onclick="toggleSwitch('notifPagos')">
+                                <div class="switch-slider"></div>
                             </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="emailAlerts" checked>
-                                    <span class="checkmark"></span>
-                                    Enviar alertas por email
-                                </label>
-                            </div>
-                        </form>
+                        </label>
                     </div>
-                </div>
-            </div>
-
-            <!-- Notificaciones -->
-            <div class="config-section" id="notifications-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-bell"></i> Configuración de Notificaciones</h2>
-                    <p>Personaliza qué notificaciones deseas recibir</p>
-                </div>
-
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-envelope"></i>
-                            <h3>Notificaciones por Email</h3>
-                        </div>
-                        <div class="notification-options">
-                            <div class="notification-item">
-                                <div class="notification-info">
-                                    <h4>Ventas Diarias</h4>
-                                    <p>Resumen diario de las ventas realizadas</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="dailySalesEmail" checked>
-                                    <span class="slider"></span>
-                                </label>
+                    <div class="form-group">
+                        <label class="form-switch">
+                            <span>Resumen Diario por Email</span>
+                            <div class="switch" id="resumenDiario" onclick="toggleSwitch('resumenDiario')">
+                                <div class="switch-slider"></div>
                             </div>
-                            <div class="notification-item">
-                                <div class="notification-info">
-                                    <h4>Stock Bajo</h4>
-                                    <p>Alerta cuando los productos tengan stock bajo</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="lowStockEmail" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="notification-item">
-                                <div class="notification-info">
-                                    <h4>Nuevos Clientes</h4>
-                                    <p>Notificación cuando se registre un nuevo cliente</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="newCustomerEmail">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
+                        </label>
                     </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-desktop"></i>
-                            <h3>Notificaciones del Sistema</h3>
-                        </div>
-                        <div class="notification-options">
-                            <div class="notification-item">
-                                <div class="notification-info">
-                                    <h4>Sonidos de Notificación</h4>
-                                    <p>Reproducir sonidos para alertas importantes</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notificationSounds" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="notification-item">
-                                <div class="notification-info">
-                                    <h4>Notificaciones Push</h4>
-                                    <p>Mostrar notificaciones del navegador</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="pushNotifications">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    <button class="btn btn-primary" onclick="guardarNotificaciones()">Guardar Configuración</button>
                 </div>
             </div>
-
-            <!-- Respaldos -->
-            <div class="config-section" id="backup-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-cloud"></i> Respaldos y Restauración</h2>
-                    <p>Administra los respaldos de tus datos</p>
-                </div>
-
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-download"></i>
-                            <h3>Crear Respaldo</h3>
-                        </div>
-                        <div class="backup-options">
-                            <div class="backup-type">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="backupProducts" checked>
-                                    <span class="checkmark"></span>
-                                    Inventario de Productos
-                                </label>
-                            </div>
-                            <div class="backup-type">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="backupSales" checked>
-                                    <span class="checkmark"></span>
-                                    Historial de Ventas
-                                </label>
-                            </div>
-                            <div class="backup-type">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="backupClients" checked>
-                                    <span class="checkmark"></span>
-                                    Base de Datos de Clientes
-                                </label>
-                            </div>
-                            <div class="backup-type">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="backupSuppliers" checked>
-                                    <span class="checkmark"></span>
-                                    Información de Proveedores
-                                </label>
-                            </div>
-                            <div class="backup-type">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="backupSettings" checked>
-                                    <span class="checkmark"></span>
-                                    Configuraciones del Sistema
-                                </label>
-                            </div>
-                        </div>
-                        <div class="backup-actions">
-                            <button class="btn" onclick="createBackup()">
-                                <i class="fas fa-download"></i>
-                                Crear Respaldo Completo
-                            </button>
-                            <button class="btn btn-secondary" onclick="scheduleBackup()">
-                                <i class="fas fa-clock"></i>
-                                Programar Respaldos Automáticos
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-upload"></i>
-                            <h3>Restaurar Datos</h3>
-                        </div>
-                        <div class="restore-options">
-                            <div class="file-upload-area" onclick="document.getElementById('backupFile').click()">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Haz clic aquí para seleccionar un archivo de respaldo</p>
-                                <small>Formatos soportados: .json, .csv, .xlsx</small>
-                                <input type="file" id="backupFile" style="display: none;" accept=".json,.csv,.xlsx" onchange="handleBackupFile(this)">
-                            </div>
-                            <button class="btn btn-warning" onclick="restoreBackup()" disabled id="restoreBtn">
-                                <i class="fas fa-upload"></i>
-                                Restaurar Datos
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-history"></i>
-                            <h3>Historial de Respaldos</h3>
-                        </div>
-                        <div class="backup-history" id="backupHistory">
-                            <!-- Se llenará dinámicamente -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuración Avanzada -->
-            <div class="config-section" id="advanced-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-tools"></i> Configuración Avanzada</h2>
-                    <p>Opciones avanzadas del sistema</p>
-                </div>
-
-                <div class="config-cards">
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-database"></i>
-                            <h3>Gestión de Datos</h3>
-                        </div>
-                        <div class="advanced-options">
-                            <button class="btn btn-secondary" onclick="clearCache()">
-                                <i class="fas fa-broom"></i>
-                                Limpiar Caché del Sistema
-                            </button>
-                            <button class="btn btn-warning" onclick="resetDatabase()">
-                                <i class="fas fa-database"></i>
-                                Reiniciar Base de Datos
-                            </button>
-                            <button class="btn btn-danger" onclick="factoryReset()">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Restaurar Configuración de Fábrica
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-code"></i>
-                            <h3>Información del Sistema</h3>
-                        </div>
-                        <div class="system-info">
-                            <div class="info-item">
-                                <span class="info-label">Versión del Sistema:</span>
-                                <span class="info-value">AriStore v2.1.0</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Base de Datos:</span>
-                                <span class="info-value">LocalStorage HTML5</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Navegador:</span>
-                                <span class="info-value" id="browserInfo">Chrome 91.0</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Último Respaldo:</span>
-                                <span class="info-value" id="lastBackup">Nunca</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="config-card">
-                        <div class="card-header">
-                            <i class="fas fa-shield-alt"></i>
-                            <h3>Seguridad</h3>
-                        </div>
-                        <div class="security-options">
-                            <div class="security-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="autoLogout" checked>
-                                    <span class="checkmark"></span>
-                                    Cerrar sesión automáticamente después de inactividad
-                                </label>
-                            </div>
-                            <div class="security-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="requirePassword">
-                                    <span class="checkmark"></span>
-                                    Requerir contraseña para acciones críticas
-                                </label>
-                            </div>
-                            <div class="security-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="auditLog" checked>
-                                    <span class="checkmark"></span>
-                                    Mantener registro de actividades
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // Inicializar la página
+        let configuraciones = JSON.parse(localStorage.getItem('aristore_configuraciones')) || {};
+
         document.addEventListener('DOMContentLoaded', function() {
-            loadSettings();
-            loadUsers();
-            loadBackupHistory();
-            updateSystemInfo();
+            cargarConfiguraciones();
         });
 
-        // Mostrar sección específica
-        function showSection(sectionName) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.config-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Mostrar la sección seleccionada
-            document.getElementById(sectionName + '-section').classList.add('active');
-            
-            // Actualizar navegación
-            document.querySelectorAll('.config-nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+        function cargarConfiguraciones() {
+            // Cargar información de empresa
+            if (configuraciones.empresa) {
+                document.getElementById('empresaNombre').value = configuraciones.empresa.nombre || '';
+                document.getElementById('empresaRuc').value = configuraciones.empresa.ruc || '';
+                document.getElementById('empresaDireccion').value = configuraciones.empresa.direccion || '';
+                document.getElementById('empresaTelefono').value = configuraciones.empresa.telefono || '';
+            }
+
+            // Cargar configuración de facturación
+            if (configuraciones.facturacion) {
+                document.getElementById('moneda').value = configuraciones.facturacion.moneda || 'PEN';
+                document.getElementById('igv').value = configuraciones.facturacion.igv || 18;
+                document.getElementById('serieFactura').value = configuraciones.facturacion.serieFactura || 'F001';
+                document.getElementById('serieBoleta').value = configuraciones.facturacion.serieBoleta || 'B001';
+            }
+
+            // Cargar configuración de inventario
+            if (configuraciones.inventario) {
+                document.getElementById('stockMinimo').value = configuraciones.inventario.stockMinimo || 10;
+            }
+
+            // Cargar configuración de seguridad
+            if (configuraciones.seguridad) {
+                document.getElementById('tiempoSesion').value = configuraciones.seguridad.tiempoSesion || 30;
+            }
         }
 
-        // Cargar configuraciones
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('aristore_settings') || '{}');
-            
-            // Cargar valores guardados
-            if (settings.storeName) document.getElementById('storeName').value = settings.storeName;
-            if (settings.storeSlogan) document.getElementById('storeSlogan').value = settings.storeSlogan;
-            if (settings.storePhone) document.getElementById('storePhone').value = settings.storePhone;
-            if (settings.storeEmail) document.getElementById('storeEmail').value = settings.storeEmail;
-            if (settings.storeAddress) document.getElementById('storeAddress').value = settings.storeAddress;
-            if (settings.taxRate) document.getElementById('taxRate').value = settings.taxRate;
-            if (settings.currency) document.getElementById('currency').value = settings.currency;
-            if (settings.lowStockAlert) document.getElementById('lowStockAlert').value = settings.lowStockAlert;
-            
-            // Configurar checkboxes
-            if (settings.emailAlerts !== undefined) document.getElementById('emailAlerts').checked = settings.emailAlerts;
-            if (settings.dailySalesEmail !== undefined) document.getElementById('dailySalesEmail').checked = settings.dailySalesEmail;
-            if (settings.lowStockEmail !== undefined) document.getElementById('lowStockEmail').checked = settings.lowStockEmail;
+        function toggleSwitch(switchId) {
+            const switchElement = document.getElementById(switchId);
+            switchElement.classList.toggle('active');
         }
 
-        // Guardar todas las configuraciones
-        function saveAllSettings() {
-            const settings = {
-                storeName: document.getElementById('storeName').value,
-                storeSlogan: document.getElementById('storeSlogan').value,
-                storePhone: document.getElementById('storePhone').value,
-                storeEmail: document.getElementById('storeEmail').value,
-                storeAddress: document.getElementById('storeAddress').value,
-                taxRate: parseFloat(document.getElementById('taxRate').value),
-                taxIncluded: document.getElementById('taxIncluded').value === 'true',
-                taxNumber: document.getElementById('taxNumber').value,
-                currency: document.getElementById('currency').value,
-                currencySymbol: document.getElementById('currencySymbol').value,
-                lowStockAlert: parseInt(document.getElementById('lowStockAlert').value),
-                criticalStockAlert: parseInt(document.getElementById('criticalStockAlert').value),
-                emailAlerts: document.getElementById('emailAlerts').checked,
-                dailySalesEmail: document.getElementById('dailySalesEmail').checked,
-                lowStockEmail: document.getElementById('lowStockEmail').checked,
-                newCustomerEmail: document.getElementById('newCustomerEmail').checked,
-                notificationSounds: document.getElementById('notificationSounds').checked,
-                pushNotifications: document.getElementById('pushNotifications').checked,
-                autoLogout: document.getElementById('autoLogout').checked,
-                requirePassword: document.getElementById('requirePassword').checked,
-                auditLog: document.getElementById('auditLog').checked
+        function guardarEmpresa() {
+            const empresa = {
+                nombre: document.getElementById('empresaNombre').value,
+                ruc: document.getElementById('empresaRuc').value,
+                direccion: document.getElementById('empresaDireccion').value,
+                telefono: document.getElementById('empresaTelefono').value
             };
-            
-            localStorage.setItem('aristore_settings', JSON.stringify(settings));
-            showAlert('Configuraciones guardadas correctamente', 'success');
+
+            configuraciones.empresa = empresa;
+            localStorage.setItem('aristore_configuraciones', JSON.stringify(configuraciones));
+            alert('Información de empresa guardada exitosamente');
         }
 
-        // Restablecer configuraciones
-        function resetAllSettings() {
-            if (confirm('¿Estás seguro de que deseas restablecer todas las configuraciones a sus valores por defecto?')) {
-                localStorage.removeItem('aristore_settings');
-                location.reload();
-            }
-        }
-
-        // Gestión de usuarios
-        function addUser(event) {
-            event.preventDefault();
-            
-            const users = JSON.parse(localStorage.getItem('aristore_users') || '[]');
-            const newUser = {
-                id: 'USER-' + String(users.length + 1).padStart(3, '0'),
-                name: document.getElementById('userName').value,
-                email: document.getElementById('userEmail').value,
-                role: document.getElementById('userRole').value,
-                password: document.getElementById('userPassword').value,
-                active: true,
-                createdAt: new Date().toISOString(),
-                lastLogin: null
+        function guardarFacturacion() {
+            const facturacion = {
+                moneda: document.getElementById('moneda').value,
+                igv: parseFloat(document.getElementById('igv').value),
+                serieFactura: document.getElementById('serieFactura').value,
+                serieBoleta: document.getElementById('serieBoleta').value
             };
-            
-            users.push(newUser);
-            localStorage.setItem('aristore_users', JSON.stringify(users));
-            
-            // Limpiar formulario
-            document.getElementById('userName').value = '';
-            document.getElementById('userEmail').value = '';
-            document.getElementById('userPassword').value = '';
-            document.getElementById('userRole').value = 'employee';
-            
-            loadUsers();
-            showAlert('Usuario agregado correctamente', 'success');
+
+            configuraciones.facturacion = facturacion;
+            localStorage.setItem('aristore_configuraciones', JSON.stringify(configuraciones));
+            alert('Configuración de facturación guardada exitosamente');
         }
 
-        function loadUsers() {
-            const users = JSON.parse(localStorage.getItem('aristore_users') || '[]');
-            
-            // Agregar usuario administrador por defecto si no hay usuarios
-            if (users.length === 0) {
-                users.push({
-                    id: 'USER-001',
-                    name: 'Administrador',
-                    email: 'admin@aristore.com',
-                    role: 'admin',
-                    active: true,
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                });
-                localStorage.setItem('aristore_users', JSON.stringify(users));
-            }
-            
-            const container = document.getElementById('usersList');
-            container.innerHTML = users.map(user => `
-                <div class="user-item">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">${user.name}</div>
-                        <div class="user-email">${user.email}</div>
-                        <div class="user-role role-${user.role}">${getRoleName(user.role)}</div>
-                    </div>
-                    <div class="user-status ${user.active ? 'active' : 'inactive'}">
-                        ${user.active ? 'Activo' : 'Inactivo'}
-                    </div>
-                    <div class="user-actions">
-                        <button class="btn-icon" onclick="editUser('${user.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon ${user.role === 'admin' ? 'disabled' : ''}" onclick="toggleUser('${user.id}')">
-                            <i class="fas fa-${user.active ? 'ban' : 'check'}"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getRoleName(role) {
-            const roles = {
-                admin: 'Administrador',
-                manager: 'Gerente',
-                employee: 'Empleado',
-                viewer: 'Solo Lectura'
+        function guardarInventario() {
+            const inventario = {
+                stockAutomatico: document.getElementById('stockAutomatico').classList.contains('active'),
+                alertasStock: document.getElementById('alertasStock').classList.contains('active'),
+                stockMinimo: parseInt(document.getElementById('stockMinimo').value),
+                codigosAutomaticos: document.getElementById('codigosAutomaticos').classList.contains('active')
             };
-            return roles[role] || role;
+
+            configuraciones.inventario = inventario;
+            localStorage.setItem('aristore_configuraciones', JSON.stringify(configuraciones));
+            alert('Configuración de inventario guardada exitosamente');
         }
 
-        function editUser(userId) {
-            showAlert('Función de edición en desarrollo', 'info');
-        }
-
-        function toggleUser(userId) {
-            const users = JSON.parse(localStorage.getItem('aristore_users') || '[]');
-            const user = users.find(u => u.id === userId);
-            
-            if (user && user.role !== 'admin') {
-                user.active = !user.active;
-                localStorage.setItem('aristore_users', JSON.stringify(users));
-                loadUsers();
-                showAlert(`Usuario ${user.active ? 'activado' : 'desactivado'}`, 'success');
-            }
-        }
-
-        // Gestión de respaldos
-        function createBackup() {
-            const backupData = {
-                timestamp: new Date().toISOString(),
-                version: '2.1.0',
-                data: {}
+        function guardarSeguridad() {
+            const seguridad = {
+                twoFactor: document.getElementById('twoFactor').classList.contains('active'),
+                autoLogout: document.getElementById('autoLogout').classList.contains('active'),
+                tiempoSesion: parseInt(document.getElementById('tiempoSesion').value),
+                auditLog: document.getElementById('auditLog').classList.contains('active')
             };
-            
-            // Incluir datos según las opciones seleccionadas
-            if (document.getElementById('backupProducts').checked) {
-                backupData.data.products = JSON.parse(localStorage.getItem('aristore_products') || '[]');
-            }
-            if (document.getElementById('backupSales').checked) {
-                backupData.data.sales = JSON.parse(localStorage.getItem('aristore_sales') || '[]');
-            }
-            if (document.getElementById('backupClients').checked) {
-                backupData.data.clients = JSON.parse(localStorage.getItem('aristore_clients') || '[]');
-            }
-            if (document.getElementById('backupSuppliers').checked) {
-                backupData.data.suppliers = JSON.parse(localStorage.getItem('aristore_suppliers') || '[]');
-            }
-            if (document.getElementById('backupSettings').checked) {
-                backupData.data.settings = JSON.parse(localStorage.getItem('aristore_settings') || '{}');
-                backupData.data.users = JSON.parse(localStorage.getItem('aristore_users') || '[]');
-            }
-            
-            // Crear archivo de descarga
-            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `AriStore_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            // Guardar en historial
-            saveBackupHistory(backupData);
-            showAlert('Respaldo creado correctamente', 'success');
+
+            configuraciones.seguridad = seguridad;
+            localStorage.setItem('aristore_configuraciones', JSON.stringify(configuraciones));
+            alert('Configuración de seguridad guardada exitosamente');
         }
 
-        function handleBackupFile(input) {
-            if (input.files.length > 0) {
-                document.getElementById('restoreBtn').disabled = false;
-                showAlert('Archivo seleccionado. Haz clic en "Restaurar Datos" para continuar.', 'info');
-            }
+        function guardarNotificaciones() {
+            const notificaciones = {
+                notifStock: document.getElementById('notifStock').classList.contains('active'),
+                notifVentas: document.getElementById('notifVentas').classList.contains('active'),
+                notifPagos: document.getElementById('notifPagos').classList.contains('active'),
+                resumenDiario: document.getElementById('resumenDiario').classList.contains('active')
+            };
+
+            configuraciones.notificaciones = notificaciones;
+            localStorage.setItem('aristore_configuraciones', JSON.stringify(configuraciones));
+            alert('Configuración de notificaciones guardada exitosamente');
         }
 
-        function restoreBackup() {
-            const fileInput = document.getElementById('backupFile');
-            if (fileInput.files.length === 0) return;
-            
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const backupData = JSON.parse(e.target.result);
-                    
-                    if (confirm('¿Estás seguro de que deseas restaurar estos datos? Esta acción sobrescribirá los datos actuales.')) {
-                        if (backupData.data.products) {
-                            localStorage.setItem('aristore_products', JSON.stringify(backupData.data.products));
-                        }
-                        if (backupData.data.sales) {
-                            localStorage.setItem('aristore_sales', JSON.stringify(backupData.data.sales));
-                        }
-                        if (backupData.data.clients) {
-                            localStorage.setItem('aristore_clients', JSON.stringify(backupData.data.clients));
-                        }
-                        if (backupData.data.suppliers) {
-                            localStorage.setItem('aristore_suppliers', JSON.stringify(backupData.data.suppliers));
-                        }
-                        if (backupData.data.settings) {
-                            localStorage.setItem('aristore_settings', JSON.stringify(backupData.data.settings));
-                        }
-                        if (backupData.data.users) {
-                            localStorage.setItem('aristore_users', JSON.stringify(backupData.data.users));
-                        }
-                        
-                        showAlert('Datos restaurados correctamente', 'success');
-                        setTimeout(() => location.reload(), 2000);
-                    }
-                } catch (error) {
-                    showAlert('Error al leer el archivo de respaldo', 'error');
+        function crearBackup() {
+            const backup = {
+                fecha: new Date().toISOString(),
+                datos: {
+                    productos: JSON.parse(localStorage.getItem('aristore_products')) || [],
+                    ventas: JSON.parse(localStorage.getItem('aristore_sales')) || [],
+                    clientes: JSON.parse(localStorage.getItem('aristore_clientes')) || [],
+                    proveedores: JSON.parse(localStorage.getItem('aristore_proveedores')) || [],
+                    empleados: JSON.parse(localStorage.getItem('aristore_empleados')) || [],
+                    configuraciones: configuraciones
                 }
             };
-            
-            reader.readAsText(file);
+
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aristore_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Backup creado y descargado exitosamente');
         }
 
-        function saveBackupHistory(backupData) {
-            const history = JSON.parse(localStorage.getItem('aristore_backup_history') || '[]');
-            history.unshift({
-                timestamp: backupData.timestamp,
-                size: JSON.stringify(backupData).length,
-                modules: Object.keys(backupData.data)
-            });
-            
-            // Mantener solo los últimos 10 respaldos
-            if (history.length > 10) {
-                history.splice(10);
-            }
-            
-            localStorage.setItem('aristore_backup_history', JSON.stringify(history));
-            loadBackupHistory();
-        }
-
-        function loadBackupHistory() {
-            const history = JSON.parse(localStorage.getItem('aristore_backup_history') || '[]');
-            const container = document.getElementById('backupHistory');
-            
-            if (history.length === 0) {
-                container.innerHTML = '<p class="no-backups">No hay respaldos disponibles</p>';
+        function restaurarBackup() {
+            const archivo = document.getElementById('archivoBackup').files[0];
+            if (!archivo) {
+                alert('Por favor selecciona un archivo de backup');
                 return;
             }
-            
-            container.innerHTML = history.map(backup => `
-                <div class="backup-item">
-                    <div class="backup-info">
-                        <div class="backup-date">${new Date(backup.timestamp).toLocaleString('es-ES')}</div>
-                        <div class="backup-details">${backup.modules.join(', ')} - ${(backup.size / 1024).toFixed(2)} KB</div>
-                    </div>
-                    <button class="btn-icon" onclick="downloadBackup('${backup.timestamp}')">
-                        <i class="fas fa-download"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
 
-        function scheduleBackup() {
-            showAlert('Función de respaldos programados en desarrollo', 'info');
-        }
-
-        // Funciones avanzadas
-        function clearCache() {
-            if (confirm('¿Estás seguro de que deseas limpiar el caché del sistema?')) {
-                // En una aplicación real, aquí se limpiarían los archivos temporales
-                showAlert('Caché del sistema limpiado', 'success');
-            }
-        }
-
-        function resetDatabase() {
-            if (confirm('¿ADVERTENCIA! Esta acción eliminará TODOS los datos del sistema. ¿Estás seguro?')) {
-                if (confirm('Esta acción no se puede deshacer. ¿Continuar?')) {
-                    localStorage.clear();
-                    showAlert('Base de datos reiniciada. Recargando...', 'success');
-                    setTimeout(() => location.reload(), 2000);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    
+                    if (confirm('¿Estás seguro de restaurar este backup? Se sobrescribirán todos los datos actuales.')) {
+                        localStorage.setItem('aristore_products', JSON.stringify(backup.datos.productos || []));
+                        localStorage.setItem('aristore_sales', JSON.stringify(backup.datos.ventas || []));
+                        localStorage.setItem('aristore_clientes', JSON.stringify(backup.datos.clientes || []));
+                        localStorage.setItem('aristore_proveedores', JSON.stringify(backup.datos.proveedores || []));
+                        localStorage.setItem('aristore_empleados', JSON.stringify(backup.datos.empleados || []));
+                        localStorage.setItem('aristore_configuraciones', JSON.stringify(backup.datos.configuraciones || {}));
+                        
+                        alert('Backup restaurado exitosamente. Recarga la página para ver los cambios.');
+                    }
+                } catch (error) {
+                    alert('Error al leer el archivo de backup. Verifica que sea un archivo válido.');
                 }
-            }
-        }
-
-        function factoryReset() {
-            if (confirm('¿ADVERTENCIA! Esto restaurará el sistema a su configuración de fábrica eliminando TODOS los datos y configuraciones. ¿Continuar?')) {
-                if (confirm('Esta acción es IRREVERSIBLE. ¿Estás completamente seguro?')) {
-                    localStorage.clear();
-                    showAlert('Sistema restaurado a configuración de fábrica', 'success');
-                    setTimeout(() => location.reload(), 2000);
-                }
-            }
-        }
-
-        function updateSystemInfo() {
-            document.getElementById('browserInfo').textContent = navigator.userAgent.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0] || 'Desconocido';
-            
-            const lastBackup = localStorage.getItem('aristore_backup_history');
-            if (lastBackup) {
-                const history = JSON.parse(lastBackup);
-                if (history.length > 0) {
-                    document.getElementById('lastBackup').textContent = new Date(history[0].timestamp).toLocaleString('es-ES');
-                }
-            }
-        }
-
-        // Event listeners para cambios en tiempo real
-        document.getElementById('primaryColor').addEventListener('change', function(e) {
-            document.documentElement.style.setProperty('--primary-color', e.target.value);
-            document.querySelector('.color-label').textContent = e.target.value;
-        });
-
-        // Mostrar alertas
-        function showAlert(message, type = 'info') {
-            const alert = document.createElement('div');
-            alert.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 16px 24px;
-                background: rgba(28, 28, 38, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                color: #ffffff;
-                z-index: 1001;
-                backdrop-filter: blur(20px);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            
-            const colors = {
-                success: '#4ecdc4',
-                error: '#ff6b6b',
-                info: '#667eea',
-                warning: '#f9ca24'
             };
-            alert.style.borderLeftColor = colors[type];
-            alert.style.borderLeftWidth = '4px';
-            
-            alert.textContent = message;
-            document.body.appendChild(alert);
-            
-            setTimeout(() => {
-                alert.style.transform = 'translateX(0)';
-            }, 100);
-            
-            setTimeout(() => {
-                alert.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(alert);
-                }, 300);
-            }, 3000);
+            reader.readAsText(archivo);
         }
-    </script>
-
-    <!-- Estilos específicos para configuración -->
-    <style>
-        .config-navigation {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-
-        .config-nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .config-nav-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-
-        .config-nav-btn.active {
-            background: linear-gradient(135deg, #4ecdc4, #44bd87);
-            color: #fff;
-            border-color: #4ecdc4;
-        }
-
-        .config-section {
-            display: none;
-        }
-
-        .config-section.active {
-            display: block;
-        }
-
-        .section-header {
-            margin-bottom: 32px;
-        }
-
-        .section-header h2 {
-            color: #ffffff;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-header p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-        }
-
-        .config-cards {
-            display: grid;
-            gap: 24px;
-        }
-
-        .config-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(20px);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .card-header h3 {
-            color: #ffffff;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .card-header i {
-            color: #4ecdc4;
-            font-size: 1.3rem;
-        }
-
-        .config-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #ffffff;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #4ecdc4;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .form-group small {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8rem;
-        }
-
-        .theme-selector {
-            display: flex;
-            gap: 16px;
-            margin-top: 12px;
-        }
-
-        .theme-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .theme-option:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .theme-option.active {
-            background: rgba(78, 205, 196, 0.2);
-            border: 1px solid #4ecdc4;
-        }
-
-        .theme-preview {
-            width: 40px;
-            height: 30px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .dark-theme {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-        }
-
-        .light-theme {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        }
-
-        .auto-theme {
-            background: linear-gradient(135deg, #1a1a2e 50%, #f8f9fa 50%);
-        }
-
-        .color-picker {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        .color-picker input[type="color"] {
-            width: 50px;
-            height: 40px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .color-label {
-            color: rgba(255, 255, 255, 0.8);
-            font-family: monospace;
-        }
-
-        .users-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .user-info {
-            flex: 1;
-        }
-
-        .user-name {
-            color: #ffffff;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .user-email {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .user-role {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .role-admin {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-        }
-
-        .role-manager {
-            background: rgba(249, 202, 36, 0.2);
-            color: #f9ca24;
-        }
-
-        .role-employee {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
-        }
-
-        .role-viewer {
-            background: rgba(116, 125, 232, 0.2);
-            color: #667eea;
-        }
-
-        .user-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .user-status.active {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
-        }
-
-        .user-status.inactive {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-        }
-
-        .user-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-icon:hover:not(.disabled) {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-
-        .btn-icon.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .notification-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .notification-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-        }
-
-        .notification-info h4 {
-            color: #ffffff;
-            font-size: 1rem;
-            font-weight: 500;
-            margin: 0 0 4px 0;
-        }
-
-        .notification-info p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #4ecdc4;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            padding: 8px 0;
-        }
-
-        .checkmark {
-            width: 20px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            display: none;
-        }
-
-        .checkbox-label input[type="checkbox"]:checked + .checkmark {
-            background: #4ecdc4;
-            border-color: #4ecdc4;
-        }
-
-        .checkbox-label input[type="checkbox"]:checked + .checkmark:after {
-            content: "";
-            position: absolute;
-            left: 6px;
-            top: 2px;
-            width: 6px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-
-        .backup-options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .backup-type {
-            padding: 8px 0;
-        }
-
-        .backup-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .file-upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .file-upload-area:hover {
-            border-color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.05);
-        }
-
-        .file-upload-area i {
-            font-size: 3rem;
-            color: #4ecdc4;
-            margin-bottom: 16px;
-        }
-
-        .file-upload-area p {
-            color: rgba(255, 255, 255, 0.8);
-            margin: 0 0 8px 0;
-            font-size: 1rem;
-        }
-
-        .file-upload-area small {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-        }
-
-        .backup-history {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .backup-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-        }
-
-        .backup-date {
-            color: #ffffff;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .backup-details {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-        }
-
-        .no-backups {
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-        }
-
-        .advanced-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .system-info {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-        }
-
-        .info-value {
-            color: #ffffff;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .security-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .security-item {
-            padding: 12px 0;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .config-navigation {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                padding-bottom: 8px;
-            }
-            
-            .backup-actions {
-                flex-direction: column;
-            }
-        }
-    </style>
-
-    <!-- Firebase Configuration -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-            apiKey: "AIzaSyCzsn9shEOuhQ1ez2_xzRsHHUPXUZeCyyo",
-            authDomain: "arisoft-49e7c.firebaseapp.com",
-            projectId: "arisoft-49e7c",
-            storageBucket: "arisoft-49e7c.firebasestorage.app",
-            messagingSenderId: "128011827798",
-            appId: "1:128011827798:web:49da366cc846a6e40959f7",
-            measurementId: "G-MQ58NER7Q6"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        
-        console.log('Firebase Analytics inicializado en módulo Configuración');
     </script>
 </body>
 </html>

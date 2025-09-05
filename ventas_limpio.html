@@ -567,10 +567,6 @@
                         <div class="section-content">
                             <input type="text" class="search-box" id="productSearch" placeholder="🔍 Buscar productos...">
                             
-                            <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; color: #1e40af;">
-                                <i class="fas fa-info-circle"></i> Los precios mostrados incluyen IVA (13%)
-                            </div>
-                            
                             <div class="product-grid" id="productGrid">
                                 <!-- Los productos se cargarán dinámicamente -->
                             </div>
@@ -599,11 +595,11 @@
                             
                             <div class="cart-total" id="cartTotal">
                                 <div class="total-row">
-                                    <span>Subtotal (sin IVA):</span>
+                                    <span>Subtotal:</span>
                                     <span id="subtotal">$0.00</span>
                                 </div>
                                 <div class="total-row">
-                                    <span>IVA (13%):</span>
+                                    <span>IVA (18%):</span>
                                     <span id="tax">$0.00</span>
                                 </div>
                                 <div class="total-row final">
@@ -653,11 +649,11 @@
 
             <div class="cart-total">
                 <div class="total-row">
-                    <span>Subtotal (sin IVA):</span>
+                    <span>Subtotal:</span>
                     <span id="modalSubtotal">$0.00</span>
                 </div>
                 <div class="total-row">
-                    <span>IVA (13%):</span>
+                    <span>IVA (18%):</span>
                     <span id="modalTax">$0.00</span>
                 </div>
                 <div class="total-row final">
@@ -984,19 +980,18 @@
         }
 
         function updateCartTotal() {
-            // Los precios ya incluyen IVA del 13%
-            const totalWithTax = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const subtotal = totalWithTax / 1.13; // Calcular base sin IVA
-            const tax = totalWithTax - subtotal; // IVA incluido
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.18;
+            const total = subtotal + tax;
 
-            document.getElementById('subtotal').textContent = `$${Math.round(subtotal).toLocaleString()}`;
-            document.getElementById('tax').textContent = `$${Math.round(tax).toLocaleString()}`;
-            document.getElementById('total').textContent = `$${totalWithTax.toLocaleString()}`;
+            document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString()}`;
+            document.getElementById('tax').textContent = `$${tax.toLocaleString()}`;
+            document.getElementById('total').textContent = `$${total.toLocaleString()}`;
 
             // Actualizar también el modal
-            document.getElementById('modalSubtotal').textContent = `$${Math.round(subtotal).toLocaleString()}`;
-            document.getElementById('modalTax').textContent = `$${Math.round(tax).toLocaleString()}`;
-            document.getElementById('modalTotal').textContent = `$${totalWithTax.toLocaleString()}`;
+            document.getElementById('modalSubtotal').textContent = `$${subtotal.toLocaleString()}`;
+            document.getElementById('modalTax').textContent = `$${tax.toLocaleString()}`;
+            document.getElementById('modalTotal').textContent = `$${total.toLocaleString()}`;
         }
 
         function clearCart() {
@@ -1037,10 +1032,9 @@
             const customerName = document.getElementById('customerSelect').value || 'Cliente General';
             const paymentMethod = document.getElementById('paymentMethod').value;
 
-            // Los precios ya incluyen IVA del 13%
-            const totalWithTax = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const subtotal = totalWithTax / 1.13; // Base sin IVA
-            const tax = totalWithTax - subtotal; // IVA incluido
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.18;
+            const total = subtotal + tax;
 
             const sale = {
                 id: Date.now(),
@@ -1049,9 +1043,9 @@
                 customer: customerName,
                 paymentMethod: paymentMethod,
                 items: [...cart],
-                subtotal: Math.round(subtotal),
-                tax: Math.round(tax),
-                total: totalWithTax,
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
                 status: 'completed'
             };
 

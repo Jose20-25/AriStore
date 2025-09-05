@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - AriStore ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar (compacto) */
+        .sidebar { width: 280px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-right: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1); position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .sidebar-logo { display: flex; align-items: center; text-decoration: none; color: white; font-weight: 700; font-size: 20px; }
+        .sidebar-logo img { width: 40px; height: 40px; margin-right: 12px; border-radius: 8px; }
+        .sidebar-nav { padding: 20px 0; }
+        .nav-section { margin-bottom: 32px; }
+        .nav-section-title { padding: 0 20px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 20px; text-decoration: none; color: #475569; font-weight: 500; transition: all 0.3s ease; position: relative; }
+        .nav-item:hover { background: rgba(102, 126, 234, 0.1); color: #4f46e5; transform: translateX(4px); }
+        .nav-item.active { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; font-weight: 600; }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #fbbf24; border-radius: 0 4px 4px 0; }
+        .nav-item i { width: 20px; margin-right: 12px; font-size: 16px; }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; padding: 32px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); min-height: 100vh; }
+        .page-header { background: rgba(255, 255, 255, 0.95); padding: 32px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 32px; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .page-title { font-size: 32px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .page-subtitle { color: #64748b; font-size: 16px; }
+        .content-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 24px; }
+        
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; font-size: 14px; }
+        .btn-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
+        .btn-secondary { background: rgba(100, 116, 139, 0.1); color: #475569; border: 1px solid rgba(100, 116, 139, 0.2); }
+        .btn-success { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: white; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: rgba(255, 255, 255, 0.95); padding: 24px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .stat-value { font-size: 32px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .stat-label { color: #64748b; font-size: 14px; }
+        
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.1); }
+        .table { width: 100%; border-collapse: collapse; background: white; }
+        .table th { background: #f8fafc; padding: 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; }
+        .table td { padding: 16px; border-bottom: 1px solid #f3f4f6; }
+        .table tr:hover { background: #f9fafb; }
+        
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .search-box { position: relative; max-width: 300px; flex: 1; margin-right: 16px; }
+        .search-box input { width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+        .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 5% auto; padding: 32px; width: 90%; max-width: 600px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 24px; font-weight: 700; color: #1e293b; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #9ca3af; }
+        .close:hover { color: #374151; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; color: #374151; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
+        .form-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .form-select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; }
+        
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-active { background: #dcfce7; color: #16a34a; }
+        .status-inactive { background: #fee2e2; color: #dc2626; }
+        .role-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .role-admin { background: #fef3c7; color: #d97706; }
+        .role-user { background: #dbeafe; color: #2563eb; }
+        .role-viewer { background: #f3e8ff; color: #7c3aed; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="sidebar-logo">
+                    <img src="logos/aristore.png" alt="AriStore Logo">
+                    <span>AriStore ERP</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="index.html" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Análisis</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión</div>
+                    <a href="ventas.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Ventas</span></a>
+                    <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                    <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                    <a href="proveedores.html" class="nav-item"><i class="fas fa-truck"></i><span>Proveedores</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Finanzas</div>
+                    <a href="contabilidad.html" class="nav-item"><i class="fas fa-calculator"></i><span>Contabilidad</span></a>
+                    <a href="facturacion.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>Facturación</span></a>
+                    <a href="reportes.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Reportes</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">RRHH</div>
+                    <a href="empleados.html" class="nav-item"><i class="fas fa-user-tie"></i><span>Empleados</span></a>
+                    <a href="nomina.html" class="nav-item"><i class="fas fa-money-check-alt"></i><span>Nómina</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+                    <a href="usuarios.html" class="nav-item active"><i class="fas fa-users-cog"></i><span>Usuarios</span></a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-users-cog"></i> Gestión de Usuarios</h1>
+                <p class="page-subtitle">Administra usuarios, roles y permisos del sistema</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="totalUsuarios">0</div><div class="stat-label">Total Usuarios</div></div>
+                <div class="stat-card"><div class="stat-value" id="usuariosActivos">0</div><div class="stat-label">Usuarios Activos</div></div>
+                <div class="stat-card"><div class="stat-value" id="administradores">0</div><div class="stat-label">Administradores</div></div>
+                <div class="stat-card"><div class="stat-value" id="ultimoAcceso">-</div><div class="stat-label">Último Acceso</div></div>
+            </div>
+
+            <!-- Content Card -->
+            <div class="content-card">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar usuarios..." onkeyup="filtrarUsuarios()">
+                    </div>
+                    <button class="btn btn-primary" onclick="abrirModalUsuario()">
+                        <i class="fas fa-plus"></i> Nuevo Usuario
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th><th>Email</th><th>Rol</th><th>Estado</th><th>Último Acceso</th><th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <!-- Los usuarios se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Roles y Permisos -->
+            <div class="content-card">
+                <h3 style="margin-bottom: 24px;">Gestión de Roles y Permisos</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4 style="color: #d97706; margin-bottom: 12px;"><i class="fas fa-crown"></i> Administrador</h4>
+                        <p style="color: #64748b; font-size: 14px;">Acceso completo al sistema</p>
+                        <div style="margin-top: 12px;">
+                            <span style="background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Todos los permisos</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4 style="color: #2563eb; margin-bottom: 12px;"><i class="fas fa-user"></i> Usuario</h4>
+                        <p style="color: #64748b; font-size: 14px;">Acceso a módulos básicos</p>
+                        <div style="margin-top: 12px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Ventas, Inventario</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4 style="color: #7c3aed; margin-bottom: 12px;"><i class="fas fa-eye"></i> Visualizador</h4>
+                        <p style="color: #64748b; font-size: 14px;">Solo lectura</p>
+                        <div style="margin-top: 12px;">
+                            <span style="background: #f3e8ff; color: #7c3aed; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Solo lectura</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Usuario -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitulo">Nuevo Usuario</h2>
+                <span class="close" onclick="cerrarModalUsuario()">&times;</span>
+            </div>
+            <form id="formUsuario" onsubmit="guardarUsuario(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-input" id="nombreUsuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="emailUsuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-input" id="usernameUsuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="passwordUsuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" id="rolUsuario" required>
+                            <option value="admin">Administrador</option>
+                            <option value="user">Usuario</option>
+                            <option value="viewer">Visualizador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="estadoUsuario" required>
+                            <option value="activo">Activo</option>
+                            <option value="inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-input" id="telefonoUsuario">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Departamento</label>
+                        <input type="text" class="form-input" id="departamentoUsuario">
+                    </div>
+                </div>
+                <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalUsuario()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let usuarios = JSON.parse(localStorage.getItem('aristore_usuarios')) || [
+            {
+                id: 1,
+                nombre: 'Admin AriStore',
+                email: 'admin@aristore.com',
+                username: 'admin',
+                password: 'admin123',
+                rol: 'admin',
+                estado: 'activo',
+                telefono: '+51 999 888 777',
+                departamento: 'Administración',
+                fechaCreacion: '2024-01-01',
+                ultimoAcceso: new Date().toISOString()
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarUsuarios();
+            updateStats();
+        });
+
+        function cargarUsuarios() {
+            const tbody = document.getElementById('usuariosTableBody');
+            tbody.innerHTML = '';
+            
+            usuarios.forEach(usuario => {
+                const fechaAcceso = usuario.ultimoAcceso ? new Date(usuario.ultimoAcceso).toLocaleDateString() : 'Nunca';
+                
+                const row = `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="user-avatar">${usuario.nombre.charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <div style="font-weight: 600;">${usuario.nombre}</div>
+                                    <div style="font-size: 12px; color: #64748b;">@${usuario.username}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${usuario.email}</td>
+                        <td>
+                            <span class="role-badge role-${usuario.rol}">
+                                ${usuario.rol === 'admin' ? 'Administrador' : usuario.rol === 'user' ? 'Usuario' : 'Visualizador'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${usuario.estado}">
+                                ${usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                            </span>
+                        </td>
+                        <td>${fechaAcceso}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; margin-right: 8px;" onclick="editarUsuario(${usuario.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger" style="padding: 8px 12px;" onclick="eliminarUsuario(${usuario.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function updateStats() {
+            const usuariosActivos = usuarios.filter(u => u.estado === 'activo').length;
+            const administradores = usuarios.filter(u => u.rol === 'admin').length;
+            const ultimoAcceso = usuarios.length > 0 ? 
+                Math.max(...usuarios.map(u => u.ultimoAcceso ? new Date(u.ultimoAcceso).getTime() : 0)) : 0;
+
+            document.getElementById('totalUsuarios').textContent = usuarios.length;
+            document.getElementById('usuariosActivos').textContent = usuariosActivos;
+            document.getElementById('administradores').textContent = administradores;
+            document.getElementById('ultimoAcceso').textContent = ultimoAcceso > 0 ? 
+                new Date(ultimoAcceso).toLocaleDateString() : '-';
+        }
+
+        function abrirModalUsuario(id = null) {
+            const modal = document.getElementById('modalUsuario');
+            const titulo = document.getElementById('modalTitulo');
+            const form = document.getElementById('formUsuario');
+            
+            if (id) {
+                const usuario = usuarios.find(u => u.id === id);
+                titulo.textContent = 'Editar Usuario';
+                document.getElementById('nombreUsuario').value = usuario.nombre;
+                document.getElementById('emailUsuario').value = usuario.email;
+                document.getElementById('usernameUsuario').value = usuario.username;
+                document.getElementById('passwordUsuario').value = usuario.password;
+                document.getElementById('rolUsuario').value = usuario.rol;
+                document.getElementById('estadoUsuario').value = usuario.estado;
+                document.getElementById('telefonoUsuario').value = usuario.telefono || '';
+                document.getElementById('departamentoUsuario').value = usuario.departamento || '';
+                form.dataset.editId = id;
+            } else {
+                titulo.textContent = 'Nuevo Usuario';
+                form.reset();
+                delete form.dataset.editId;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modalUsuario').style.display = 'none';
+        }
+
+        function guardarUsuario(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const editId = form.dataset.editId;
+            
+            const usuario = {
+                id: editId ? parseInt(editId) : Date.now(),
+                nombre: document.getElementById('nombreUsuario').value,
+                email: document.getElementById('emailUsuario').value,
+                username: document.getElementById('usernameUsuario').value,
+                password: document.getElementById('passwordUsuario').value,
+                rol: document.getElementById('rolUsuario').value,
+                estado: document.getElementById('estadoUsuario').value,
+                telefono: document.getElementById('telefonoUsuario').value,
+                departamento: document.getElementById('departamentoUsuario').value,
+                fechaCreacion: editId ? usuarios.find(u => u.id === parseInt(editId)).fechaCreacion : new Date().toISOString(),
+                ultimoAcceso: editId ? usuarios.find(u => u.id === parseInt(editId)).ultimoAcceso : null
+            };
+            
+            if (editId) {
+                const index = usuarios.findIndex(u => u.id === parseInt(editId));
+                usuarios[index] = usuario;
+            } else {
+                usuarios.push(usuario);
+            }
+            
+            localStorage.setItem('aristore_usuarios', JSON.stringify(usuarios));
+            cargarUsuarios();
+            updateStats();
+            cerrarModalUsuario();
+            
+            alert('Usuario guardado exitosamente');
+        }
+
+        function editarUsuario(id) {
+            abrirModalUsuario(id);
+        }
+
+        function eliminarUsuario(id) {
+            if (confirm('¿Estás seguro de eliminar este usuario?')) {
+                usuarios = usuarios.filter(u => u.id !== id);
+                localStorage.setItem('aristore_usuarios', JSON.stringify(usuarios));
+                cargarUsuarios();
+                updateStats();
+                alert('Usuario eliminado exitosamente');
+            }
+        }
+
+        function filtrarUsuarios() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const tbody = document.getElementById('usuariosTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let row of rows) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            }
+        }
+
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalUsuario');
+            if (event.target === modal) {
+                cerrarModalUsuario();
+            }
+        }
+    </script>
+</body>
+</html>

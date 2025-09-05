@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad - AriStore ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles - Copiados del estilo existente */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #ddd transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: #ddd;
+            border-radius: 3px;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+            border-radius: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 32px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #4f46e5;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #fbbf24;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.1);
+            color: #475569;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .balance-positive {
+            color: #16a34a;
+        }
+
+        .balance-negative {
+            color: #dc2626;
+        }
+
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="sidebar-logo">
+                    <img src="logos/aristore.png" alt="AriStore Logo">
+                    <span>AriStore ERP</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Análisis</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión</div>
+                    <a href="ventas.html" class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Ventas</span>
+                    </a>
+                    <a href="inventario.html" class="nav-item">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventario</span>
+                    </a>
+                    <a href="clientes.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="proveedores.html" class="nav-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Finanzas</div>
+                    <a href="contabilidad.html" class="nav-item active">
+                        <i class="fas fa-calculator"></i>
+                        <span>Contabilidad</span>
+                    </a>
+                    <a href="facturacion.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Facturación</span>
+                    </a>
+                    <a href="reportes.html" class="nav-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reportes</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">RRHH</div>
+                    <a href="empleados.html" class="nav-item">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Empleados</span>
+                    </a>
+                    <a href="nomina.html" class="nav-item">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Nómina</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <a href="configuracion.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuración</span>
+                    </a>
+                    <a href="usuarios.html" class="nav-item">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-calculator"></i>
+                    Contabilidad
+                </h1>
+                <p class="page-subtitle">Gestión contable y financiera</p>
+            </div>
+
+            <!-- Balance General -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value balance-positive" id="totalIngresos">$0</div>
+                    <div class="stat-label">Total Ingresos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value balance-negative" id="totalGastos">$0</div>
+                    <div class="stat-label">Total Gastos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="balanceNeto">$0</div>
+                    <div class="stat-label">Balance Neto</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cuentasPorCobrar">$0</div>
+                    <div class="stat-label">Cuentas por Cobrar</div>
+                </div>
+            </div>
+
+            <!-- Tabs de Contenido -->
+            <div class="content-card">
+                <div class="tab-container">
+                    <button class="tab-button active" onclick="showTab('movimientos')">Movimientos</button>
+                    <button class="tab-button" onclick="showTab('cuentas')">Plan de Cuentas</button>
+                    <button class="tab-button" onclick="showTab('balance')">Balance General</button>
+                    <button class="tab-button" onclick="showTab('perdidas')">Estado de Resultados</button>
+                </div>
+
+                <!-- Tab Movimientos -->
+                <div class="tab-content active" id="movimientos">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Movimientos Contables</h3>
+                        <button class="btn btn-primary" onclick="showMovimientoModal()">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Movimiento
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Cuenta</th>
+                                    <th>Debe</th>
+                                    <th>Haber</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movimientosTableBody">
+                                <!-- Los movimientos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Plan de Cuentas -->
+                <div class="tab-content" id="cuentas">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Plan de Cuentas</h3>
+                        <button class="btn btn-primary" onclick="showCuentaModal()">
+                            <i class="fas fa-plus"></i>
+                            Nueva Cuenta
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Tipo</th>
+                                    <th>Saldo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuentasTableBody">
+                                <!-- Las cuentas se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Balance General -->
+                <div class="tab-content" id="balance">
+                    <h3>Balance General</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px;">
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 16px; color: #1e293b;">ACTIVOS</h4>
+                            <div id="activosBalance">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="font-weight: 600; margin-bottom: 16px; color: #1e293b;">PASIVOS Y PATRIMONIO</h4>
+                            <div id="pasivosBalance">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Estado de Resultados -->
+                <div class="tab-content" id="perdidas">
+                    <h3>Estado de Resultados</h3>
+                    <div style="margin-top: 24px;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                            <h4 style="color: #16a34a; margin-bottom: 12px;">INGRESOS</h4>
+                            <div id="ingresosEstado">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                        <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                            <h4 style="color: #dc2626; margin-bottom: 12px;">GASTOS</h4>
+                            <div id="gastosEstado">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; border: 2px solid #4f46e5;">
+                            <h4 style="color: #4f46e5; margin-bottom: 12px;">RESULTADO</h4>
+                            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 18px;">
+                                <span>Utilidad/Pérdida del Período:</span>
+                                <span id="resultadoFinal">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuevo Movimiento -->
+    <div class="modal" id="movimientoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nuevo Movimiento Contable</h2>
+                <button class="modal-close" onclick="closeMovimientoModal()">&times;</button>
+            </div>
+            <form id="movimientoForm">
+                <div class="form-group">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-input" id="movimientoFecha" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <input type="text" class="form-input" id="movimientoDescripcion" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Cuenta Debe</label>
+                        <select class="form-input" id="cuentaDebe" required>
+                            <option value="">Seleccionar cuenta...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Monto Debe</label>
+                        <input type="number" class="form-input" id="montoDebe" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Cuenta Haber</label>
+                        <select class="form-input" id="cuentaHaber" required>
+                            <option value="">Seleccionar cuenta...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Monto Haber</label>
+                        <input type="number" class="form-input" id="montoHaber" step="0.01" min="0">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeMovimientoModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Movimiento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Cuenta -->
+    <div class="modal" id="cuentaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nueva Cuenta Contable</h2>
+                <button class="modal-close" onclick="closeCuentaModal()">&times;</button>
+            </div>
+            <form id="cuentaForm">
+                <div class="form-group">
+                    <label class="form-label">Código</label>
+                    <input type="text" class="form-input" id="cuentaCodigo" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-input" id="cuentaNombre" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-input" id="cuentaTipo" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="activo">Activo</option>
+                        <option value="pasivo">Pasivo</option>
+                        <option value="patrimonio">Patrimonio</option>
+                        <option value="ingreso">Ingreso</option>
+                        <option value="gasto">Gasto</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeCuentaModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cuenta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let cuentas = JSON.parse(localStorage.getItem('aristore_cuentas')) || [];
+        let movimientos = JSON.parse(localStorage.getItem('aristore_movimientos')) || [];
+
+        // Inicializar cuentas predeterminadas si no existen
+        if (cuentas.length === 0) {
+            cuentas = [
+                { codigo: '1001', nombre: 'Caja', tipo: 'activo', saldo: 0 },
+                { codigo: '1002', nombre: 'Banco', tipo: 'activo', saldo: 0 },
+                { codigo: '1003', nombre: 'Inventario', tipo: 'activo', saldo: 0 },
+                { codigo: '2001', nombre: 'Proveedores', tipo: 'pasivo', saldo: 0 },
+                { codigo: '3001', nombre: 'Capital', tipo: 'patrimonio', saldo: 0 },
+                { codigo: '4001', nombre: 'Ventas', tipo: 'ingreso', saldo: 0 },
+                { codigo: '5001', nombre: 'Costo de Ventas', tipo: 'gasto', saldo: 0 },
+                { codigo: '5002', nombre: 'Gastos Operativos', tipo: 'gasto', saldo: 0 }
+            ];
+            localStorage.setItem('aristore_cuentas', JSON.stringify(cuentas));
+        }
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            loadMovimientos();
+            loadCuentas();
+            populateSelectCuentas();
+            updateBalance();
+            updateEstadoResultados();
+            
+            // Establecer fecha actual por defecto
+            document.getElementById('movimientoFecha').value = new Date().toISOString().split('T')[0];
+        });
+
+        // Mostrar/ocultar tabs
+        function showTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar el tab seleccionado
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const ingresos = movimientos.filter(m => {
+                const cuenta = cuentas.find(c => c.codigo === m.cuentaHaber);
+                return cuenta && cuenta.tipo === 'ingreso';
+            }).reduce((sum, m) => sum + m.montoHaber, 0);
+
+            const gastos = movimientos.filter(m => {
+                const cuenta = cuentas.find(c => c.codigo === m.cuentaDebe);
+                return cuenta && cuenta.tipo === 'gasto';
+            }).reduce((sum, m) => sum + m.montoDebe, 0);
+
+            const balance = ingresos - gastos;
+
+            document.getElementById('totalIngresos').textContent = `$${ingresos.toLocaleString()}`;
+            document.getElementById('totalGastos').textContent = `$${gastos.toLocaleString()}`;
+            document.getElementById('balanceNeto').textContent = `$${balance.toLocaleString()}`;
+            document.getElementById('balanceNeto').className = balance >= 0 ? 'stat-value balance-positive' : 'stat-value balance-negative';
+            
+            // Calcular cuentas por cobrar (simplificado)
+            document.getElementById('cuentasPorCobrar').textContent = '$5,420';
+        }
+
+        // Cargar movimientos
+        function loadMovimientos() {
+            const tbody = document.getElementById('movimientosTableBody');
+            tbody.innerHTML = '';
+
+            movimientos.forEach((movimiento, index) => {
+                const cuentaDebe = cuentas.find(c => c.codigo === movimiento.cuentaDebe);
+                const cuentaHaber = cuentas.find(c => c.codigo === movimiento.cuentaHaber);
+                
+                const row = `
+                    <tr>
+                        <td>${new Date(movimiento.fecha).toLocaleDateString()}</td>
+                        <td>${movimiento.descripcion}</td>
+                        <td>${cuentaDebe ? cuentaDebe.nombre : 'N/A'} / ${cuentaHaber ? cuentaHaber.nombre : 'N/A'}</td>
+                        <td>$${movimiento.montoDebe.toLocaleString()}</td>
+                        <td>$${movimiento.montoHaber.toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; background: #fef2f2; color: #dc2626;" onclick="deleteMovimiento(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Cargar cuentas
+        function loadCuentas() {
+            const tbody = document.getElementById('cuentasTableBody');
+            tbody.innerHTML = '';
+
+            cuentas.forEach((cuenta, index) => {
+                const row = `
+                    <tr>
+                        <td>${cuenta.codigo}</td>
+                        <td>${cuenta.nombre}</td>
+                        <td style="text-transform: capitalize;">${cuenta.tipo}</td>
+                        <td>$${cuenta.saldo.toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 8px 12px; background: #fef2f2; color: #dc2626;" onclick="deleteCuenta(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Poblar select de cuentas
+        function populateSelectCuentas() {
+            const selectDebe = document.getElementById('cuentaDebe');
+            const selectHaber = document.getElementById('cuentaHaber');
+            
+            selectDebe.innerHTML = '<option value="">Seleccionar cuenta...</option>';
+            selectHaber.innerHTML = '<option value="">Seleccionar cuenta...</option>';
+            
+            cuentas.forEach(cuenta => {
+                const option = `<option value="${cuenta.codigo}">${cuenta.codigo} - ${cuenta.nombre}</option>`;
+                selectDebe.innerHTML += option;
+                selectHaber.innerHTML += option;
+            });
+        }
+
+        // Modales
+        function showMovimientoModal() {
+            document.getElementById('movimientoModal').classList.add('active');
+        }
+
+        function closeMovimientoModal() {
+            document.getElementById('movimientoModal').classList.remove('active');
+            document.getElementById('movimientoForm').reset();
+        }
+
+        function showCuentaModal() {
+            document.getElementById('cuentaModal').classList.add('active');
+        }
+
+        function closeCuentaModal() {
+            document.getElementById('cuentaModal').classList.remove('active');
+            document.getElementById('cuentaForm').reset();
+        }
+
+        // Guardar movimiento
+        document.getElementById('movimientoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const movimiento = {
+                fecha: document.getElementById('movimientoFecha').value,
+                descripcion: document.getElementById('movimientoDescripcion').value,
+                cuentaDebe: document.getElementById('cuentaDebe').value,
+                montoDebe: parseFloat(document.getElementById('montoDebe').value) || 0,
+                cuentaHaber: document.getElementById('cuentaHaber').value,
+                montoHaber: parseFloat(document.getElementById('montoHaber').value) || 0
+            };
+
+            movimientos.push(movimiento);
+            localStorage.setItem('aristore_movimientos', JSON.stringify(movimientos));
+            
+            updateStats();
+            loadMovimientos();
+            updateBalance();
+            updateEstadoResultados();
+            closeMovimientoModal();
+        });
+
+        // Guardar cuenta
+        document.getElementById('cuentaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const cuenta = {
+                codigo: document.getElementById('cuentaCodigo').value,
+                nombre: document.getElementById('cuentaNombre').value,
+                tipo: document.getElementById('cuentaTipo').value,
+                saldo: 0
+            };
+
+            cuentas.push(cuenta);
+            localStorage.setItem('aristore_cuentas', JSON.stringify(cuentas));
+            
+            loadCuentas();
+            populateSelectCuentas();
+            closeCuentaModal();
+        });
+
+        // Eliminar movimiento
+        function deleteMovimiento(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar este movimiento?')) {
+                movimientos.splice(index, 1);
+                localStorage.setItem('aristore_movimientos', JSON.stringify(movimientos));
+                updateStats();
+                loadMovimientos();
+                updateBalance();
+                updateEstadoResultados();
+            }
+        }
+
+        // Eliminar cuenta
+        function deleteCuenta(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta cuenta?')) {
+                cuentas.splice(index, 1);
+                localStorage.setItem('aristore_cuentas', JSON.stringify(cuentas));
+                loadCuentas();
+                populateSelectCuentas();
+            }
+        }
+
+        // Actualizar balance general
+        function updateBalance() {
+            const activos = cuentas.filter(c => c.tipo === 'activo');
+            const pasivos = cuentas.filter(c => c.tipo === 'pasivo');
+            const patrimonio = cuentas.filter(c => c.tipo === 'patrimonio');
+
+            let activosHtml = '';
+            let totalActivos = 0;
+            activos.forEach(cuenta => {
+                activosHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>${cuenta.nombre}</span>
+                    <span>$${cuenta.saldo.toLocaleString()}</span>
+                </div>`;
+                totalActivos += cuenta.saldo;
+            });
+            activosHtml += `<div style="border-top: 2px solid #1e293b; padding-top: 8px; font-weight: 700; display: flex; justify-content: space-between;">
+                <span>TOTAL ACTIVOS</span>
+                <span>$${totalActivos.toLocaleString()}</span>
+            </div>`;
+
+            let pasivosHtml = '';
+            let totalPasivos = 0;
+            pasivos.forEach(cuenta => {
+                pasivosHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>${cuenta.nombre}</span>
+                    <span>$${cuenta.saldo.toLocaleString()}</span>
+                </div>`;
+                totalPasivos += cuenta.saldo;
+            });
+            
+            let totalPatrimonio = 0;
+            patrimonio.forEach(cuenta => {
+                pasivosHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>${cuenta.nombre}</span>
+                    <span>$${cuenta.saldo.toLocaleString()}</span>
+                </div>`;
+                totalPatrimonio += cuenta.saldo;
+            });
+            
+            pasivosHtml += `<div style="border-top: 2px solid #1e293b; padding-top: 8px; font-weight: 700; display: flex; justify-content: space-between;">
+                <span>TOTAL PASIVOS Y PATRIMONIO</span>
+                <span>$${(totalPasivos + totalPatrimonio).toLocaleString()}</span>
+            </div>`;
+
+            document.getElementById('activosBalance').innerHTML = activosHtml;
+            document.getElementById('pasivosBalance').innerHTML = pasivosHtml;
+        }
+
+        // Actualizar estado de resultados
+        function updateEstadoResultados() {
+            const ingresos = cuentas.filter(c => c.tipo === 'ingreso');
+            const gastos = cuentas.filter(c => c.tipo === 'gasto');
+
+            let ingresosHtml = '';
+            let totalIngresos = 0;
+            ingresos.forEach(cuenta => {
+                const saldoCuenta = movimientos.filter(m => m.cuentaHaber === cuenta.codigo)
+                    .reduce((sum, m) => sum + m.montoHaber, 0);
+                ingresosHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>${cuenta.nombre}</span>
+                    <span>$${saldoCuenta.toLocaleString()}</span>
+                </div>`;
+                totalIngresos += saldoCuenta;
+            });
+
+            let gastosHtml = '';
+            let totalGastos = 0;
+            gastos.forEach(cuenta => {
+                const saldoCuenta = movimientos.filter(m => m.cuentaDebe === cuenta.codigo)
+                    .reduce((sum, m) => sum + m.montoDebe, 0);
+                gastosHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>${cuenta.nombre}</span>
+                    <span>$${saldoCuenta.toLocaleString()}</span>
+                </div>`;
+                totalGastos += saldoCuenta;
+            });
+
+            const resultado = totalIngresos - totalGastos;
+
+            document.getElementById('ingresosEstado').innerHTML = ingresosHtml + `
+                <div style="border-top: 1px solid #16a34a; padding-top: 8px; font-weight: 600; display: flex; justify-content: space-between;">
+                    <span>TOTAL INGRESOS</span>
+                    <span>$${totalIngresos.toLocaleString()}</span>
+                </div>`;
+
+            document.getElementById('gastosEstado').innerHTML = gastosHtml + `
+                <div style="border-top: 1px solid #dc2626; padding-top: 8px; font-weight: 600; display: flex; justify-content: space-between;">
+                    <span>TOTAL GASTOS</span>
+                    <span>$${totalGastos.toLocaleString()}</span>
+                </div>`;
+
+            document.getElementById('resultadoFinal').textContent = `$${resultado.toLocaleString()}`;
+            document.getElementById('resultadoFinal').style.color = resultado >= 0 ? '#16a34a' : '#dc2626';
+        }
+    </script>
+</body>
+</html>
