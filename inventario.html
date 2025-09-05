@@ -6,6 +6,12 @@
     <title>Inventario - AriStore ERP</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Libraries for Report Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -328,6 +334,72 @@
         .btn-warning:hover {
             background: #d97706;
         }
+
+        /* Dropdown Styles */
+        .btn-group {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 220px;
+            padding: 0.5rem 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: none;
+            color: #374151;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .text-red { color: #dc2626; }
+        .text-green { color: #16a34a; }
+        .text-blue { color: #2563eb; }
+        .text-orange { color: #ea580c; }
 
         /* Search and Filters */
         .search-filters {
@@ -881,14 +953,37 @@
                                 <i class="fas fa-file-import"></i>
                                 Importar
                             </button>
-                            <button class="btn btn-secondary" onclick="exportInventory()">
-                                <i class="fas fa-file-export"></i>
-                                Exportar
+                            <button class="btn btn-secondary" onclick="exportBasicCSV()">
+                                <i class="fas fa-file-csv"></i>
+                                CSV Básico
                             </button>
-                            <button class="btn btn-warning" onclick="generateReport()">
-                                <i class="fas fa-chart-bar"></i>
-                                Reporte
-                            </button>
+                            
+                            <!-- Dropdown para reportes avanzados -->
+                            <div class="btn-group">
+                                <button class="btn btn-warning dropdown-toggle" onclick="toggleReportsMenu()">
+                                    <i class="fas fa-file-alt"></i>
+                                    Reportes Avanzados
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-menu" id="reportsDropdown">
+                                    <button class="dropdown-item" onclick="generatePDFReport()">
+                                        <i class="fas fa-file-pdf text-red"></i>
+                                        Reporte PDF Completo
+                                    </button>
+                                    <button class="dropdown-item" onclick="generateExcelReport()">
+                                        <i class="fas fa-file-excel text-green"></i>
+                                        Excel Avanzado
+                                    </button>
+                                    <button class="dropdown-item" onclick="generateAnalyticsReport()">
+                                        <i class="fas fa-chart-line text-blue"></i>
+                                        Análisis Completo
+                                    </button>
+                                    <button class="dropdown-item" onclick="generateLowStockReport()">
+                                        <i class="fas fa-exclamation-triangle text-orange"></i>
+                                        Reporte Stock Crítico
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1184,7 +1279,7 @@
                 purchasePrice: 750.00,
                 shippingCost: 25.00,
                 salePrice: 899.99,
-                stock: 45,
+                stock: 0,
                 minimumStock: 10,
                 warehouse: 'main',
                 warehouseName: 'Almacén Principal',
@@ -1961,54 +2056,557 @@
         styleSheet.textContent = additionalStyles;
         document.head.appendChild(styleSheet);
 
-        // Funciones adicionales para importar y exportar
-        function importProducts() {
-            showNotification('Función de importación próximamente disponible.', 'info');
+        // Funciones para manejo del dropdown de reportes
+        function toggleReportsMenu() {
+            const dropdown = document.getElementById('reportsDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Cerrar dropdown si se hace clic fuera
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.btn-group')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
         }
 
-        function exportInventory() {
-            // Generar CSV simple para demostración
-            let csvContent = "Código,Producto,Categoría,Precio Compra,Flete,Precio Venta,Ganancia,Stock\n";
+        // Función para CSV básico (mantener compatibilidad)
+        function exportBasicCSV() {
+            let csvContent = "Código,Producto,Categoría,Precio Compra,Flete,Precio Venta,Ganancia,Stock,Estado\n";
             
             products.forEach(product => {
                 const profit = product.salePrice - (product.purchasePrice + product.shippingCost);
-                csvContent += `${product.code},${product.name},${product.categoryName},${product.purchasePrice},${product.shippingCost},${product.salePrice},${profit.toFixed(2)},${product.stock}\n`;
+                const stockStatus = getStockStatus(product.stock, product.minimumStock);
+                csvContent += `${product.code},${product.name},${product.categoryName},${product.purchasePrice},${product.shippingCost},${product.salePrice},${profit.toFixed(2)},${product.stock},${stockStatus.text}\n`;
             });
 
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'inventario_aristore.csv';
+            a.download = `inventario_basico_${getCurrentDateString()}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
             
-            showNotification('Inventario exportado exitosamente', 'success');
+            showNotification('CSV básico exportado exitosamente', 'success');
         }
 
-        function generateReport() {
-            const totalProducts = products.length;
+        // Función para generar reporte PDF completo y profesional
+        function generatePDFReport() {
+            showNotification('Generando reporte PDF profesional...', 'info');
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal
+            
+            // Configuración de colores
+            const primaryColor = [30, 60, 114];
+            const secondaryColor = [42, 82, 152];
+            const accentColor = [59, 130, 246];
+            
+            // HEADER - Logo y título
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 0, 297, 35, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ARISTORE ERP', 20, 22);
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Reporte Completo de Inventario', 20, 30);
+            
+            // Información de la empresa y fecha
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(10);
+            const currentDate = new Date().toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            doc.text(`Generado el: ${currentDate}`, 200, 22);
+            doc.text(`Hora: ${new Date().toLocaleTimeString('es-ES')}`, 200, 28);
+            
+            // SECCIÓN DE ESTADÍSTICAS GENERALES
+            let yPos = 50;
+            doc.setFillColor(248, 250, 252);
+            doc.rect(15, yPos - 5, 267, 25, 'F');
+            
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('📊 RESUMEN EJECUTIVO', 20, yPos + 3);
+            
+            const totalProducts = products.reduce((sum, product) => sum + product.stock, 0);
             const totalValue = products.reduce((sum, product) => sum + (product.salePrice * product.stock), 0);
-            const totalProfit = products.reduce((sum, product) => {
-                const profit = product.salePrice - (product.purchasePrice + product.shippingCost);
-                return sum + (profit * product.stock);
-            }, 0);
+            const totalInvestment = products.reduce((sum, product) => sum + ((product.purchasePrice + product.shippingCost) * product.stock), 0);
+            const potentialProfit = totalValue - totalInvestment;
+            const profitMargin = totalInvestment > 0 ? ((potentialProfit / totalInvestment) * 100) : 0;
             const lowStockProducts = products.filter(p => p.stock <= p.minimumStock && p.stock > 0).length;
             const outOfStockProducts = products.filter(p => p.stock === 0).length;
+            
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            
+            const statsData = [
+                [`Total de productos únicos:`, `${products.length}`],
+                [`Total unidades en stock:`, `${totalProducts.toLocaleString()}`],
+                [`Valor total del inventario:`, `$${totalValue.toLocaleString()}`],
+                [`Inversión total:`, `$${totalInvestment.toLocaleString()}`],
+                [`Ganancia potencial:`, `$${potentialProfit.toLocaleString()}`],
+                [`Margen de ganancia:`, `${profitMargin.toFixed(1)}%`],
+                [`Productos con stock crítico:`, `${lowStockProducts}`],
+                [`Productos agotados:`, `${outOfStockProducts}`]
+            ];
+            
+            let col1X = 25, col2X = 155;
+            statsData.forEach((stat, index) => {
+                const x = index < 4 ? col1X : col2X;
+                const y = yPos + 10 + ((index % 4) * 4);
+                doc.setFont('helvetica', 'normal');
+                doc.text(stat[0], x, y);
+                doc.setFont('helvetica', 'bold');
+                doc.text(stat[1], x + 80, y);
+            });
+            
+            yPos += 45;
+            
+            // TABLA DE PRODUCTOS
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('📦 DETALLE DE PRODUCTOS', 20, yPos);
+            
+            // Preparar datos para la tabla
+            const tableData = products.map(product => {
+                const profit = product.salePrice - (product.purchasePrice + product.shippingCost);
+                const profitPercent = ((profit / (product.purchasePrice + product.shippingCost)) * 100);
+                const stockStatus = getStockStatus(product.stock, product.minimumStock);
+                
+                return [
+                    product.code,
+                    product.name.length > 25 ? product.name.substring(0, 25) + '...' : product.name,
+                    product.categoryName,
+                    `$${product.purchasePrice.toFixed(2)}`,
+                    `$${product.salePrice.toFixed(2)}`,
+                    product.stock.toString(),
+                    `$${profit.toFixed(2)}`,
+                    `${profitPercent.toFixed(1)}%`,
+                    stockStatus.text
+                ];
+            });
+            
+            // Configurar tabla con autoTable
+            doc.autoTable({
+                startY: yPos + 8,
+                head: [['Código', 'Producto', 'Categoría', 'P. Compra', 'P. Venta', 'Stock', 'Ganancia', 'Margen', 'Estado']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: {
+                    fillColor: primaryColor,
+                    textColor: [255, 255, 255],
+                    fontSize: 9,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    cellPadding: 3
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252]
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 25 },
+                    1: { cellWidth: 45 },
+                    2: { halign: 'center', cellWidth: 25 },
+                    3: { halign: 'right', cellWidth: 23 },
+                    4: { halign: 'right', cellWidth: 23 },
+                    5: { halign: 'center', cellWidth: 18 },
+                    6: { halign: 'right', cellWidth: 25 },
+                    7: { halign: 'center', cellWidth: 20 },
+                    8: { halign: 'center', cellWidth: 25 }
+                },
+                didParseCell: function(data) {
+                    // Colorear celdas de estado
+                    if (data.column.index === 8) {
+                        const status = data.cell.raw;
+                        if (status === 'Agotado') {
+                            data.cell.styles.textColor = [220, 38, 38];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (status === 'Stock Bajo') {
+                            data.cell.styles.textColor = [217, 119, 6];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (status === 'En Stock') {
+                            data.cell.styles.textColor = [22, 163, 74];
+                        }
+                    }
+                    
+                    // Colorear ganancias negativas
+                    if (data.column.index === 6 && data.cell.raw.startsWith('$-')) {
+                        data.cell.styles.textColor = [220, 38, 38];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
+            
+            // FOOTER
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFillColor(...primaryColor);
+                doc.rect(0, 200, 297, 10, 'F');
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text('AriStore ERP - Sistema de Inventario', 20, 206);
+                doc.text(`Página ${i} de ${pageCount}`, 250, 206);
+                doc.text(`www.aristore.com`, 130, 206);
+            }
+            
+            // Guardar el PDF
+            const fileName = `AriStore_Inventario_Completo_${getCurrentDateString()}.pdf`;
+            doc.save(fileName);
+            
+            showNotification('📄 Reporte PDF generado exitosamente', 'success');
+        }
 
-            const report = `REPORTE DE INVENTARIO - ARISTORE\n` +
-                          `=========================================\n\n` +
-                          `📊 ESTADÍSTICAS GENERALES:\n` +
-                          `• Total de productos: ${totalProducts}\n` +
-                          `• Valor total del inventario: $${totalValue.toFixed(2)}\n` +
-                          `• Ganancia potencial total: $${totalProfit.toFixed(2)}\n\n` +
-                          `⚠️ ALERTAS DE STOCK:\n` +
-                          `• Productos con stock bajo: ${lowStockProducts}\n` +
-                          `• Productos agotados: ${outOfStockProducts}\n\n` +
-                          `📅 Fecha del reporte: ${new Date().toLocaleDateString()}\n` +
-                          `🕒 Hora: ${new Date().toLocaleTimeString()}`;
+        // Función para generar Excel avanzado con múltiples hojas
+        function generateExcelReport() {
+            showNotification('Generando Excel avanzado con análisis...', 'info');
+            
+            const workbook = XLSX.utils.book_new();
+            
+            // HOJA 1: INVENTARIO COMPLETO
+            const inventoryData = products.map(product => {
+                const profit = product.salePrice - (product.purchasePrice + product.shippingCost);
+                const profitPercent = ((profit / (product.purchasePrice + product.shippingCost)) * 100);
+                const stockStatus = getStockStatus(product.stock, product.minimumStock);
+                const totalValue = product.salePrice * product.stock;
+                const totalInvestment = (product.purchasePrice + product.shippingCost) * product.stock;
+                
+                return {
+                    'Código': product.code,
+                    'Producto': product.name,
+                    'Descripción': product.description,
+                    'Categoría': product.categoryName,
+                    'Almacén': product.warehouseName,
+                    'Precio Compra': product.purchasePrice,
+                    'Flete': product.shippingCost,
+                    'Costo Total': product.purchasePrice + product.shippingCost,
+                    'Precio Venta': product.salePrice,
+                    'Ganancia Unitaria': profit,
+                    'Margen %': profitPercent,
+                    'Stock Actual': product.stock,
+                    'Stock Mínimo': product.minimumStock,
+                    'Estado': stockStatus.text,
+                    'Valor Total Inventario': totalValue,
+                    'Inversión Total': totalInvestment,
+                    'Ganancia Potencial': totalValue - totalInvestment
+                };
+            });
+            
+            const inventorySheet = XLSX.utils.json_to_sheet(inventoryData);
+            
+            // Configurar ancho de columnas
+            const colWidths = [
+                {wch: 12}, {wch: 30}, {wch: 35}, {wch: 15}, {wch: 15},
+                {wch: 12}, {wch: 10}, {wch: 12}, {wch: 12}, {wch: 15},
+                {wch: 10}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 18},
+                {wch: 15}, {wch: 18}
+            ];
+            inventorySheet['!cols'] = colWidths;
+            
+            XLSX.utils.book_append_sheet(workbook, inventorySheet, "Inventario Completo");
+            
+            // HOJA 2: RESUMEN EJECUTIVO
+            const totalProducts = products.reduce((sum, product) => sum + product.stock, 0);
+            const totalValue = products.reduce((sum, product) => sum + (product.salePrice * product.stock), 0);
+            const totalInvestment = products.reduce((sum, product) => sum + ((product.purchasePrice + product.shippingCost) * product.stock), 0);
+            const potentialProfit = totalValue - totalInvestment;
+            
+            const summaryData = [
+                ['RESUMEN EJECUTIVO', ''],
+                ['Fecha del Reporte', getCurrentDateString()],
+                ['Hora de Generación', new Date().toLocaleTimeString()],
+                ['', ''],
+                ['ESTADÍSTICAS GENERALES', ''],
+                ['Total Productos Únicos', products.length],
+                ['Total Unidades en Stock', totalProducts],
+                ['Valor Total del Inventario', totalValue],
+                ['Inversión Total', totalInvestment],
+                ['Ganancia Potencial', potentialProfit],
+                ['Margen de Ganancia %', ((potentialProfit / totalInvestment) * 100).toFixed(2) + '%'],
+                ['', ''],
+                ['ALERTAS DE STOCK', ''],
+                ['Productos en Stock', products.filter(p => p.stock > p.minimumStock).length],
+                ['Productos Stock Crítico', products.filter(p => p.stock <= p.minimumStock && p.stock > 0).length],
+                ['Productos Agotados', products.filter(p => p.stock === 0).length]
+            ];
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            summarySheet['!cols'] = [{wch: 30}, {wch: 20}];
+            XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen Ejecutivo");
+            
+            // HOJA 3: ANÁLISIS POR CATEGORÍA
+            const categoryAnalysis = {};
+            products.forEach(product => {
+                const category = product.categoryName;
+                if (!categoryAnalysis[category]) {
+                    categoryAnalysis[category] = {
+                        productos: 0,
+                        unidades: 0,
+                        valorInventario: 0,
+                        inversion: 0,
+                        ganancia: 0
+                    };
+                }
+                
+                categoryAnalysis[category].productos++;
+                categoryAnalysis[category].unidades += product.stock;
+                categoryAnalysis[category].valorInventario += product.salePrice * product.stock;
+                categoryAnalysis[category].inversion += (product.purchasePrice + product.shippingCost) * product.stock;
+                categoryAnalysis[category].ganancia += (product.salePrice - product.purchasePrice - product.shippingCost) * product.stock;
+            });
+            
+            const categoryData = Object.keys(categoryAnalysis).map(category => ({
+                'Categoría': category,
+                'Productos Únicos': categoryAnalysis[category].productos,
+                'Total Unidades': categoryAnalysis[category].unidades,
+                'Valor Inventario': categoryAnalysis[category].valorInventario,
+                'Inversión': categoryAnalysis[category].inversion,
+                'Ganancia Potencial': categoryAnalysis[category].ganancia,
+                'Margen %': ((categoryAnalysis[category].ganancia / categoryAnalysis[category].inversion) * 100).toFixed(2)
+            }));
+            
+            const categorySheet = XLSX.utils.json_to_sheet(categoryData);
+            categorySheet['!cols'] = [{wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 10}];
+            XLSX.utils.book_append_sheet(workbook, categorySheet, "Análisis por Categoría");
+            
+            // HOJA 4: PRODUCTOS CRÍTICOS
+            const criticalProducts = products.filter(p => p.stock <= p.minimumStock).map(product => ({
+                'Código': product.code,
+                'Producto': product.name,
+                'Categoría': product.categoryName,
+                'Stock Actual': product.stock,
+                'Stock Mínimo': product.minimumStock,
+                'Diferencia': product.stock - product.minimumStock,
+                'Estado': product.stock === 0 ? 'AGOTADO' : 'STOCK CRÍTICO',
+                'Precio Venta': product.salePrice,
+                'Sugerencia Compra': Math.max(product.minimumStock * 2 - product.stock, 0)
+            }));
+            
+            if (criticalProducts.length > 0) {
+                const criticalSheet = XLSX.utils.json_to_sheet(criticalProducts);
+                criticalSheet['!cols'] = [{wch: 12}, {wch: 30}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 15}];
+                XLSX.utils.book_append_sheet(workbook, criticalSheet, "Productos Críticos");
+            }
+            
+            // Generar y descargar el archivo
+            const fileName = `AriStore_Inventario_Avanzado_${getCurrentDateString()}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification('📊 Excel avanzado generado exitosamente', 'success');
+        }
 
-            alert(report);
+        // Función para reporte de análisis completo con gráficos
+        function generateAnalyticsReport() {
+            showNotification('Generando análisis completo...', 'info');
+            
+            // Crear ventana modal para mostrar análisis
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal" style="max-width: 900px; max-height: 80vh;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">📈 Análisis Completo de Inventario</h3>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 2rem;">
+                        <div id="analyticsContent">
+                            <canvas id="categoryChart" width="400" height="200"></canvas>
+                            <br>
+                            <canvas id="profitChart" width="400" height="200"></canvas>
+                            <br>
+                            <div id="analyticsData"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="downloadAnalytics()">Descargar PDF</button>
+                        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Generar gráfico de distribución por categorías
+            setTimeout(() => {
+                const ctx1 = document.getElementById('categoryChart').getContext('2d');
+                const categoryData = {};
+                products.forEach(product => {
+                    const category = product.categoryName;
+                    categoryData[category] = (categoryData[category] || 0) + product.stock;
+                });
+                
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categoryData),
+                        datasets: [{
+                            data: Object.values(categoryData),
+                            backgroundColor: ['#1e3c72', '#2a5298', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Distribución de Inventario por Categorías'
+                            }
+                        }
+                    }
+                });
+                
+                // Gráfico de rentabilidad
+                const ctx2 = document.getElementById('profitChart').getContext('2d');
+                const profitData = products.slice(0, 10).map(product => {
+                    const profit = (product.salePrice - product.purchasePrice - product.shippingCost) * product.stock;
+                    return {
+                        product: product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name,
+                        profit: profit
+                    };
+                });
+                
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: profitData.map(d => d.product),
+                        datasets: [{
+                            label: 'Ganancia Potencial ($)',
+                            data: profitData.map(d => d.profit),
+                            backgroundColor: '#10b981'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top 10 - Ganancia Potencial por Producto'
+                            }
+                        }
+                    }
+                });
+                
+                // Datos adicionales de análisis
+                const analyticsHTML = generateAnalyticsHTML();
+                document.getElementById('analyticsData').innerHTML = analyticsHTML;
+                
+            }, 100);
+        }
+
+        // Reporte específico de stock crítico
+        function generateLowStockReport() {
+            const criticalProducts = products.filter(p => p.stock <= p.minimumStock);
+            
+            if (criticalProducts.length === 0) {
+                showNotification('✅ No hay productos con stock crítico', 'success');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFillColor(239, 68, 68);
+            doc.rect(0, 0, 210, 30, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('⚠️ REPORTE DE STOCK CRÍTICO', 20, 20);
+            
+            // Información
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${getCurrentDateString()}`, 20, 40);
+            doc.text(`Productos en estado crítico: ${criticalProducts.length}`, 20, 46);
+            
+            // Tabla de productos críticos
+            const tableData = criticalProducts.map(product => [
+                product.code,
+                product.name,
+                product.stock.toString(),
+                product.minimumStock.toString(),
+                product.stock === 0 ? 'AGOTADO' : 'CRÍTICO',
+                `$${(product.minimumStock * 2 * product.salePrice).toFixed(2)}`
+            ]);
+            
+            doc.autoTable({
+                startY: 55,
+                head: [['Código', 'Producto', 'Stock', 'Mínimo', 'Estado', 'Inversión Sugerida']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [239, 68, 68] }
+            });
+            
+            doc.save(`Stock_Critico_${getCurrentDateString()}.pdf`);
+            showNotification('⚠️ Reporte de stock crítico generado', 'success');
+        }
+
+        // Funciones auxiliares
+        function getCurrentDateString() {
+            const now = new Date();
+            return `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+        }
+
+        function generateAnalyticsHTML() {
+            const totalValue = products.reduce((sum, product) => sum + (product.salePrice * product.stock), 0);
+            const totalInvestment = products.reduce((sum, product) => sum + ((product.purchasePrice + product.shippingCost) * product.stock), 0);
+            const potentialProfit = totalValue - totalInvestment;
+            const avgMargin = ((potentialProfit / totalInvestment) * 100).toFixed(2);
+            
+            const topProducts = products
+                .map(p => ({
+                    ...p,
+                    totalProfit: (p.salePrice - p.purchasePrice - p.shippingCost) * p.stock
+                }))
+                .sort((a, b) => b.totalProfit - a.totalProfit)
+                .slice(0, 5);
+            
+            return `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h4 style="color: #1e3c72; margin-bottom: 1rem;">💰 Métricas Clave</h4>
+                        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                            <p><strong>Valor Total:</strong> $${totalValue.toLocaleString()}</p>
+                            <p><strong>Inversión:</strong> $${totalInvestment.toLocaleString()}</p>
+                            <p><strong>Ganancia Potencial:</strong> $${potentialProfit.toLocaleString()}</p>
+                            <p><strong>Margen Promedio:</strong> ${avgMargin}%</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: #1e3c72; margin-bottom: 1rem;">🏆 Top 5 Productos Rentables</h4>
+                        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; max-height: 150px; overflow-y: auto;">
+                            ${topProducts.map((p, i) => `
+                                <p style="margin: 0.5rem 0; font-size: 0.9rem;">
+                                    ${i+1}. ${p.name} - $${p.totalProfit.toFixed(2)}
+                                </p>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Función para importar productos (mantener para compatibilidad)
+        function importProducts() {
+            showNotification('Función de importación próximamente disponible. Use Excel para importar datos masivos.', 'info');
         }
 
         // Función para limpiar datos (útil para desarrollo/testing)
