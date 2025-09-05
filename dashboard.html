@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AriStore ERP - Dashboard Unificado</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .system-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .system-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-info h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-info p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .controls-section {
+            background: white;
+            margin: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: left;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .log-section {
+            background: #1f2937;
+            color: #e5e7eb;
+            margin: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            color: #9ca3af;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .log-timestamp {
+            color: #6b7280;
+        }
+
+        .log-success { color: #10b981; }
+        .log-warning { color: #f59e0b; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #3b82f6; }
+
+        .quick-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header del Sistema -->
+    <header class="system-header">
+        <div class="system-title">
+            <i class="fas fa-chart-line"></i>
+            AriStore ERP - Dashboard Unificado
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            Sistema Sincronizado
+        </div>
+    </header>
+
+    <!-- Dashboard Principal -->
+    <div class="dashboard-grid">
+        
+        <!-- Tarjeta de Productos -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Inventario</h3>
+                    <p>Productos y Stock</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metric-item">
+                    <span class="metric-label">Total Productos</span>
+                    <span class="metric-value" id="totalProducts">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Total Unidades</span>
+                    <span class="metric-value" id="totalUnits">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Valor Inventario</span>
+                    <span class="metric-value" id="inventoryValue">$0.00</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Stock Crítico</span>
+                    <span class="metric-value" id="criticalStock">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Ventas -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Ventas</h3>
+                    <p>Transacciones y Ingresos</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metric-item">
+                    <span class="metric-label">Total Ventas</span>
+                    <span class="metric-value" id="totalSales">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Ingresos del Día</span>
+                    <span class="metric-value" id="dailyRevenue">$0.00</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Promedio por Venta</span>
+                    <span class="metric-value" id="averageSale">$0.00</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Última Venta</span>
+                    <span class="metric-value" id="lastSale">N/A</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Clientes -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Clientes</h3>
+                    <p>Base de Clientes</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metric-item">
+                    <span class="metric-label">Total Clientes</span>
+                    <span class="metric-value" id="totalClients">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Clientes Activos</span>
+                    <span class="metric-value" id="activeClients">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Nuevos (Mes)</span>
+                    <span class="metric-value" id="newClientsMonth">0</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Fidelización</span>
+                    <span class="metric-value" id="clientRetention">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Sistema -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Sistema</h3>
+                    <p>Estado y Rendimiento</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metric-item">
+                    <span class="metric-label">Estado</span>
+                    <span class="metric-value" id="systemStatus">Activo</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Última Sync</span>
+                    <span class="metric-value" id="lastSync">Ahora</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Uso Storage</span>
+                    <span class="metric-value" id="storageUsage">0 KB</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Versión</span>
+                    <span class="metric-value" id="systemVersion">2.0.0</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controles del Sistema -->
+    <div class="controls-section">
+        <h3 class="controls-title">🎛️ Acciones del Sistema</h3>
+        <div class="controls-grid">
+            <a href="inventario.html" class="control-btn">
+                <i class="fas fa-boxes"></i>
+                <div>
+                    <div>Inventario</div>
+                    <small>Gestionar productos</small>
+                </div>
+            </a>
+            <a href="ventas.html" class="control-btn">
+                <i class="fas fa-cash-register"></i>
+                <div>
+                    <div>Punto de Venta</div>
+                    <small>Realizar ventas</small>
+                </div>
+            </a>
+            <a href="clientes.html" class="control-btn">
+                <i class="fas fa-address-book"></i>
+                <div>
+                    <div>Clientes</div>
+                    <small>Gestionar clientes</small>
+                </div>
+            </a>
+            <button class="control-btn" onclick="aristore.cleanData()">
+                <i class="fas fa-broom"></i>
+                <div>
+                    <div>Limpiar Datos</div>
+                    <small>Eliminar duplicados</small>
+                </div>
+            </button>
+            <button class="control-btn" onclick="generateSystemReport()">
+                <i class="fas fa-file-alt"></i>
+                <div>
+                    <div>Reporte General</div>
+                    <small>Estado completo</small>
+                </div>
+            </button>
+            <button class="control-btn" onclick="syncAllData()">
+                <i class="fas fa-sync"></i>
+                <div>
+                    <div>Sincronizar</div>
+                    <small>Actualizar todo</small>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Log del Sistema -->
+    <div class="log-section">
+        <div class="log-title">📋 Log del Sistema</div>
+        <div id="systemLog"></div>
+    </div>
+
+    <!-- Botones de Acción Rápida -->
+    <div class="quick-actions">
+        <button class="fab" onclick="refreshDashboard()" title="Actualizar Dashboard">
+            <i class="fas fa-sync"></i>
+        </button>
+        <button class="fab" onclick="aristore.getStatus()" title="Estado del Sistema">
+            <i class="fas fa-info"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/dataManager.js"></script>
+    
+    <script>
+        // ============= DASHBOARD UNIFICADO =============
+        
+        let dashboardData = {
+            products: [],
+            sales: [],
+            clients: [],
+            lastUpdate: null
+        };
+
+        // Inicializar dashboard
+        function initializeDashboard() {
+            log('🚀 Iniciando Dashboard Unificado...', 'info');
+            
+            // Esperar a que el gestor esté disponible
+            if (window.aristore) {
+                loadAllData();
+                updateDashboard();
+                startAutoRefresh();
+                log('✅ Dashboard inicializado correctamente', 'success');
+            } else {
+                log('⏳ Esperando gestor de datos...', 'warning');
+                setTimeout(initializeDashboard, 100);
+            }
+        }
+
+        // Cargar todos los datos
+        function loadAllData() {
+            try {
+                dashboardData.products = window.aristore.getProducts();
+                dashboardData.sales = window.aristore.getSales();
+                dashboardData.clients = window.aristore.getClients();
+                dashboardData.lastUpdate = new Date();
+                
+                log(`📦 Datos cargados: ${dashboardData.products.length} productos, ${dashboardData.sales.length} ventas, ${dashboardData.clients.length} clientes`, 'success');
+            } catch (error) {
+                log(`❌ Error cargando datos: ${error.message}`, 'error');
+            }
+        }
+
+        // Actualizar métricas del dashboard
+        function updateDashboard() {
+            try {
+                updateProductMetrics();
+                updateSalesMetrics();
+                updateClientMetrics();
+                updateSystemMetrics();
+                
+                log('📊 Dashboard actualizado', 'info');
+            } catch (error) {
+                log(`❌ Error actualizando dashboard: ${error.message}`, 'error');
+            }
+        }
+
+        // Actualizar métricas de productos
+        function updateProductMetrics() {
+            const products = dashboardData.products;
+            
+            const totalProducts = products.length;
+            const totalUnits = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+            const inventoryValue = products.reduce((sum, p) => sum + ((p.salePrice || 0) * (p.stock || 0)), 0);
+            const criticalStock = products.filter(p => (p.stock || 0) <= (p.minimumStock || 5)).length;
+            
+            document.getElementById('totalProducts').textContent = totalProducts;
+            document.getElementById('totalUnits').textContent = totalUnits.toLocaleString();
+            document.getElementById('inventoryValue').textContent = `$${inventoryValue.toLocaleString()}`;
+            document.getElementById('criticalStock').textContent = criticalStock;
+        }
+
+        // Actualizar métricas de ventas
+        function updateSalesMetrics() {
+            const sales = dashboardData.sales;
+            
+            const totalSales = sales.length;
+            const today = new Date().toDateString();
+            const dailySales = sales.filter(s => new Date(s.timestamp || s.date).toDateString() === today);
+            const dailyRevenue = dailySales.reduce((sum, s) => sum + (s.total || 0), 0);
+            const averageSale = totalSales > 0 ? (sales.reduce((sum, s) => sum + (s.total || 0), 0) / totalSales) : 0;
+            const lastSale = sales.length > 0 ? new Date(sales[sales.length - 1].timestamp || sales[sales.length - 1].date).toLocaleDateString() : 'N/A';
+            
+            document.getElementById('totalSales').textContent = totalSales;
+            document.getElementById('dailyRevenue').textContent = `$${dailyRevenue.toLocaleString()}`;
+            document.getElementById('averageSale').textContent = `$${averageSale.toFixed(2)}`;
+            document.getElementById('lastSale').textContent = lastSale;
+        }
+
+        // Actualizar métricas de clientes
+        function updateClientMetrics() {
+            const clients = dashboardData.clients;
+            
+            const totalClients = clients.length;
+            const activeClients = clients.filter(c => c.estado === 'activo').length;
+            const thisMonth = new Date().getMonth();
+            const thisYear = new Date().getFullYear();
+            const newClientsMonth = clients.filter(c => {
+                if (!c.fechaRegistro) return false;
+                const clientDate = new Date(c.fechaRegistro);
+                return clientDate.getMonth() === thisMonth && clientDate.getFullYear() === thisYear;
+            }).length;
+            const retention = totalClients > 0 ? ((activeClients / totalClients) * 100).toFixed(1) : 0;
+            
+            document.getElementById('totalClients').textContent = totalClients;
+            document.getElementById('activeClients').textContent = activeClients;
+            document.getElementById('newClientsMonth').textContent = newClientsMonth;
+            document.getElementById('clientRetention').textContent = `${retention}%`;
+        }
+
+        // Actualizar métricas del sistema
+        function updateSystemMetrics() {
+            const status = window.aristore ? window.aristore.getStatus() : null;
+            const lastSync = dashboardData.lastUpdate ? dashboardData.lastUpdate.toLocaleTimeString() : 'N/A';
+            
+            // Calcular uso de almacenamiento
+            let storageUsage = 0;
+            for (let key in localStorage) {
+                if (key.startsWith('aristore_')) {
+                    storageUsage += localStorage[key].length;
+                }
+            }
+            storageUsage = (storageUsage / 1024).toFixed(2);
+            
+            document.getElementById('systemStatus').textContent = window.aristore ? 'Activo' : 'Desconectado';
+            document.getElementById('lastSync').textContent = lastSync;
+            document.getElementById('storageUsage').textContent = `${storageUsage} KB`;
+            document.getElementById('systemVersion').textContent = status ? status.version : '2.0.0';
+        }
+
+        // Funciones de control
+        function refreshDashboard() {
+            log('🔄 Actualizando dashboard...', 'info');
+            loadAllData();
+            updateDashboard();
+        }
+
+        function syncAllData() {
+            log('🔄 Sincronizando todos los datos...', 'info');
+            if (window.aristore) {
+                window.aristore.cleanData();
+                refreshDashboard();
+                log('✅ Sincronización completada', 'success');
+            }
+        }
+
+        function generateSystemReport() {
+            if (!window.aristore) {
+                log('❌ Gestor de datos no disponible', 'error');
+                return;
+            }
+            
+            const data = window.aristore.export();
+            const report = `
+REPORTE DEL SISTEMA ARISTORE
+=============================
+
+📊 RESUMEN GENERAL:
+• Productos: ${data.products.length}
+• Clientes: ${data.clients.length}  
+• Ventas: ${data.sales.length}
+• Generado: ${new Date().toLocaleString()}
+
+📦 INVENTARIO:
+• Total unidades: ${data.products.reduce((sum, p) => sum + (p.stock || 0), 0)}
+• Valor total: $${data.products.reduce((sum, p) => sum + ((p.salePrice || 0) * (p.stock || 0)), 0).toLocaleString()}
+• Stock crítico: ${data.products.filter(p => (p.stock || 0) <= (p.minimumStock || 5)).length} productos
+
+💰 VENTAS:
+• Total ventas: ${data.sales.length}
+• Ingresos totales: $${data.sales.reduce((sum, s) => sum + (s.total || 0), 0).toLocaleString()}
+• Promedio por venta: $${data.sales.length > 0 ? (data.sales.reduce((sum, s) => sum + (s.total || 0), 0) / data.sales.length).toFixed(2) : '0.00'}
+
+👥 CLIENTES:
+• Total clientes: ${data.clients.length}
+• Clientes activos: ${data.clients.filter(c => c.estado === 'activo').length}
+            `;
+            
+            console.log(report);
+            alert(report);
+            log('📋 Reporte generado', 'success');
+        }
+
+        // Auto-refresh cada 30 segundos
+        function startAutoRefresh() {
+            setInterval(() => {
+                refreshDashboard();
+                log('🔄 Auto-actualización ejecutada', 'info');
+            }, 30000);
+        }
+
+        // Sistema de log
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('systemLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
+            
+            logElement.insertBefore(logEntry, logElement.firstChild);
+            
+            // Mantener solo los últimos 50 logs
+            while (logElement.children.length > 50) {
+                logElement.removeChild(logElement.lastChild);
+            }
+            
+            // También log a la consola
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        // Escuchar cambios de datos
+        window.addEventListener('aistoreDataChange', function(event) {
+            const { type, data } = event.detail;
+            log(`🔄 Datos actualizados: ${type} (${data.length} registros)`, 'info');
+            refreshDashboard();
+        });
+
+        // Inicializar cuando esté listo
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

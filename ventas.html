@@ -677,9 +677,12 @@
         </div>
     </div>
 
+    <!-- Incluir el gestor centralizado de datos -->
+    <script src="js/dataManager.js"></script>
+    
     <script>
-        // ============= SISTEMA DE VENTAS ARISTORE - LIMPIO =============
-        console.log('🚀 Inicializando AriStore - Sistema de Ventas Limpio');
+        // ============= SISTEMA DE VENTAS ARISTORE - CENTRALIZADO =============
+        console.log('🚀 Inicializando AriStore - Sistema de Ventas Centralizado');
 
         // Variables globales
         let cart = [];
@@ -688,90 +691,84 @@
         let sales = [];
         let saleCounter = 1001;
 
-        // Claves de almacenamiento - Integradas con el sistema existente
-        const STORAGE_KEYS = {
-            products: 'aristore_products',  // Usar el mismo que inventario.html
-            sales: 'aristore_sales_v2',
-            counter: 'aristore_counter_v2',
-            clients: 'aristore_clientes'    // Usar el mismo que clientes.html
-        };
+        // ============= INICIALIZACIÓN CENTRALIZADA =============
 
-        // ============= FUNCIONES DE PERSISTENCIA =============
-
-        function saveToStorage(key, data) {
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-                console.log(`✅ Guardado en ${key}`);
-                return true;
-            } catch (error) {
-                console.error(`❌ Error guardando ${key}:`, error);
-                showNotification('Error al guardar datos', 'error');
-                return false;
+        function waitForDataManager() {
+            if (window.aristore && window.aristore.isReady()) {
+                console.log('✅ Gestor centralizado disponible');
+                initializeSystem();
+            } else {
+                console.log('⏳ Esperando gestor de datos...');
+                setTimeout(waitForDataManager, 100);
             }
         }
 
-        function loadFromStorage(key, defaultValue = []) {
+        function initializeSystem() {
             try {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : defaultValue;
+                // Obtener datos del gestor centralizado
+                products = window.aristore.getProducts();
+                clients = window.aristore.getClients();
+                sales = window.aristore.getSales();
+                saleCounter = window.aristore.getNextSaleCounter();
+                
+                console.log('📊 Datos cargados desde gestor centralizado:', {
+                    productos: products.length,
+                    clientes: clients.length,
+                    ventas: sales.length,
+                    contadorVenta: saleCounter
+                });
+                
+                // Inicializar interfaz
+                renderProducts();
+                renderClientOptions();
+                renderSalesHistory();
+                renderCart();
+                updateCartTotal();
+                
+                console.log('✅ Sistema de ventas inicializado correctamente');
+                
+                // Escuchar cambios de otros módulos
+                window.addEventListener('aistoreDataChange', function(event) {
+                    const { type, data } = event.detail;
+                    console.log(`🔄 Sincronizando cambios de ${type}:`, data.length);
+                    
+                    switch (type) {
+                        case 'products':
+                            products = data;
+                            renderProducts();
+                            break;
+                        case 'clients':
+                            clients = data;
+                            renderClientOptions();
+                            break;
+                        case 'sales':
+                            sales = data;
+                            renderSalesHistory();
+                            break;
+                    }
+                });
+                
             } catch (error) {
-                console.error(`❌ Error cargando ${key}:`, error);
-                return defaultValue;
+                console.error('❌ Error inicializando sistema:', error);
+                showNotification('Error inicializando sistema', 'error');
             }
+        }
+
+        // ============= FUNCIONES DE PERSISTENCIA CENTRALIZADAS =============
+
+        function saveProduct(productData) {
+            return window.aristore.updateProduct(productData);
+        }
+
+        function saveSale(saleData) {
+            return window.aristore.addSale(saleData);
         }
 
         // ============= GESTIÓN DE PRODUCTOS =============
 
         function initializeProducts() {
-            products = loadFromStorage(STORAGE_KEYS.products, []);
-            
-            if (products.length === 0) {
-                console.log('📦 Creando productos de ejemplo...');
-                products = [
-                    {
-                        id: 1,
-                        code: 'ELEC-001',
-                        name: 'Laptop HP Pavilion',
-                        category: 'Electrónicos',
-                        purchasePrice: 800,
-                        salePrice: 1200,
-                        stock: 15,
-                        warehouse: 'A1'
-                    },
-                    {
-                        id: 2,
-                        code: 'ROPA-001',
-                        name: 'Camisa Polo',
-                        category: 'Ropa',
-                        purchasePrice: 15,
-                        salePrice: 35,
-                        stock: 50,
-                        warehouse: 'B2'
-                    },
-                    {
-                        id: 3,
-                        code: 'LIBR-001',
-                        name: 'Libro de JavaScript',
-                        category: 'Libros',
-                        purchasePrice: 20,
-                        salePrice: 45,
-                        stock: 25,
-                        warehouse: 'C3'
-                    },
-                    {
-                        id: 4,
-                        code: 'ELEC-002',
-                        name: 'Mouse Logitech',
-                        category: 'Electrónicos',
-                        purchasePrice: 25,
-                        salePrice: 45,
-                        stock: 30,
-                        warehouse: 'A1'
-                    }
-                ];
-                saveToStorage(STORAGE_KEYS.products, products);
-            }
-            
+            // Los productos ya están cargados desde el gestor centralizado
+            console.log(`📦 Productos disponibles: ${products.length}`);
             renderProducts();
         }
 
@@ -831,33 +828,8 @@
         // ============= GESTIÓN DE CLIENTES =============
 
         function initializeClients() {
-            clients = loadFromStorage(STORAGE_KEYS.clients, []);
-            
-            if (clients.length === 0) {
-                console.log('👥 Creando clientes de ejemplo...');
-                clients = [
-                    {
-                        id: 1,
-                        nombre: 'María González',
-                        email: 'maria@email.com',
-                        telefono: '555-0001',
-                        ciudad: 'Ciudad de México',
-                        estado: 'activo',
-                        totalCompras: 0
-                    },
-                    {
-                        id: 2,
-                        nombre: 'Juan Pérez',
-                        email: 'juan@email.com',
-                        telefono: '555-0002',
-                        ciudad: 'Guadalajara',
-                        estado: 'activo',
-                        totalCompras: 0
-                    }
-                ];
-                saveToStorage(STORAGE_KEYS.clients, clients);
-            }
-            
+            // Los clientes ya están cargados desde el gestor centralizado
+            console.log(`👥 Clientes disponibles: ${clients.length}`);
             renderClientOptions();
         }
 
@@ -1009,8 +981,8 @@
         // ============= GESTIÓN DE VENTAS =============
 
         function initializeSales() {
-            sales = loadFromStorage(STORAGE_KEYS.sales, []);
-            saleCounter = loadFromStorage(STORAGE_KEYS.counter, 1001);
+            // Las ventas ya están cargadas desde el gestor centralizado
+            console.log(`💰 Ventas disponibles: ${sales.length}`);
             renderSalesHistory();
         }
 
@@ -1046,6 +1018,7 @@
                 id: Date.now(),
                 saleNumber: `V-${saleCounter}`,
                 date: new Date().toISOString(),
+                timestamp: new Date().toISOString(),
                 customer: customerName,
                 paymentMethod: paymentMethod,
                 items: [...cart],
@@ -1055,33 +1028,42 @@
                 status: 'completed'
             };
 
-            // Actualizar stock
-            cart.forEach(item => {
-                const product = products.find(p => p.id === item.id);
-                if (product) {
-                    product.stock -= item.quantity;
-                }
-            });
+            try {
+                // Usar el gestor centralizado para la venta
+                const saleResult = window.aristore.addSale(sale);
+                
+                // Actualizar stock usando el gestor centralizado
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        product.stock -= item.quantity;
+                        window.aristore.updateProduct(product);
+                    }
+                });
 
-            // Guardar datos
-            sales.unshift(sale);
-            saleCounter++;
+                // Actualizar datos locales
+                sales = window.aristore.getSales();
+                products = window.aristore.getProducts();
+                saleCounter = window.aristore.getNextSaleCounter();
 
-            saveToStorage(STORAGE_KEYS.sales, sales);
-            saveToStorage(STORAGE_KEYS.products, products);
-            saveToStorage(STORAGE_KEYS.counter, saleCounter);
+                // Limpiar y actualizar interfaz
+                clearCart();
+                closeSaleModal();
+                renderProducts();
+                renderSalesHistory();
 
-            // Limpiar y actualizar
-            clearCart();
-            closeSaleModal();
-            renderProducts();
-            renderSalesHistory();
+                // Resetear formulario
+                document.getElementById('customerSelect').value = '';
+                document.getElementById('paymentMethod').value = 'efectivo';
 
-            // Resetear formulario
-            document.getElementById('customerSelect').value = '';
-            document.getElementById('paymentMethod').value = 'efectivo';
-
-            showNotification(`¡Venta ${sale.saleNumber} completada exitosamente!`, 'success');
+                showNotification(`¡Venta ${sale.saleNumber} completada exitosamente!`, 'success');
+                
+                console.log('✅ Venta procesada correctamente:', sale.saleNumber);
+                
+            } catch (error) {
+                console.error('❌ Error procesando venta:', error);
+                showNotification('Error procesando la venta', 'error');
+            }
         }
 
         function renderSalesHistory() {
@@ -1209,7 +1191,117 @@
             console.table(products.slice(0, 5));
         };
 
-        console.log('✅ Sistema de Ventas AriStore - Versión Limpia Cargada');
+        // 🛠️ FUNCIONES DE LIMPIEZA Y DIAGNÓSTICO AVANZADO
+        window.diagnosticarProductos = function() {
+            console.log('🔍 === DIAGNÓSTICO DETALLADO DE PRODUCTOS ===');
+            
+            const stored = JSON.parse(localStorage.getItem('aristore_products') || '[]');
+            const inMemory = products;
+            
+            console.log('📊 Estadísticas:');
+            console.log('  - En localStorage:', stored.length);
+            console.log('  - En memoria:', inMemory.length);
+            
+            console.log('🔢 IDs en localStorage:', stored.map(p => p.id).sort((a,b) => a-b));
+            console.log('🔢 IDs en memoria:', inMemory.map(p => p.id).sort((a,b) => a-b));
+            
+            // Buscar duplicados en localStorage
+            const storedIds = stored.map(p => p.id);
+            const duplicatesInStorage = storedIds.filter((id, index) => storedIds.indexOf(id) !== index);
+            
+            if (duplicatesInStorage.length > 0) {
+                console.log('🚨 IDs duplicados en localStorage:', duplicatesInStorage);
+                console.log('📋 Productos duplicados:', stored.filter(p => duplicatesInStorage.includes(p.id)));
+            } else {
+                console.log('✅ No hay duplicados en localStorage');
+            }
+            
+            // Comparar estructura
+            if (stored.length > 0 && inMemory.length > 0) {
+                console.log('📝 Primer producto localStorage:', stored[0]);
+                console.log('📝 Primer producto memoria:', inMemory[0]);
+            }
+            
+            return {
+                localStorage: stored.length,
+                memoria: inMemory.length,
+                duplicados: duplicatesInStorage.length
+            };
+        };
+
+        window.limpiarDuplicados = function() {
+            console.log('🧹 Iniciando limpieza de duplicados...');
+            
+            const stored = JSON.parse(localStorage.getItem('aristore_products') || '[]');
+            const originalCount = stored.length;
+            
+            // Eliminar duplicados basándose en ID
+            const unique = stored.filter((product, index, self) => 
+                index === self.findIndex(p => p.id === product.id)
+            );
+            
+            if (unique.length !== originalCount) {
+                localStorage.setItem('aristore_products', JSON.stringify(unique));
+                console.log(`✅ Limpieza completada: ${originalCount} → ${unique.length} productos`);
+                console.log(`🗑️ Eliminados ${originalCount - unique.length} duplicados`);
+                
+                const recargar = confirm('¿Recargar la página para aplicar los cambios?');
+                if (recargar) {
+                    location.reload();
+                }
+            } else {
+                console.log('✅ No se encontraron duplicados para limpiar');
+            }
+            
+            return unique.length;
+        };
+
+        // ============= INICIALIZACIÓN DEL SISTEMA =============
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Sistema de Ventas AriStore...');
+            
+            // Esperar al gestor centralizado
+            waitForDataManager();
+        });
+
+        // ============= FUNCIONES DE DEBUG CENTRALIZADAS =============
+
+        window.debugSystem = function() {
+            if (window.aristore) {
+                console.log('🔍 === DIAGNÓSTICO DEL SISTEMA CENTRALIZADO ===');
+                const status = window.aristore.getStatus();
+                console.log('📊 Estado del sistema:', status);
+                console.table(window.aristore.getProducts().slice(0, 5));
+            } else {
+                console.log('❌ Gestor de datos no disponible');
+            }
+        };
+
+        window.limpiarDuplicadosCentralizado = function() {
+            if (window.aristore) {
+                console.log('🧹 Iniciando limpieza centralizada...');
+                const result = window.aristore.cleanData();
+                console.log('✅ Limpieza completada:', result);
+                
+                // Recargar datos
+                products = window.aristore.getProducts();
+                clients = window.aristore.getClients();
+                sales = window.aristore.getSales();
+                
+                // Actualizar interfaz
+                renderProducts();
+                renderClientOptions();
+                renderSalesHistory();
+                
+                return result;
+            } else {
+                console.log('❌ Gestor de datos no disponible');
+                return null;
+            }
+        };
+
+        console.log('✅ Sistema de Ventas AriStore - Versión Centralizada Cargada');
     </script>
 </body>
 </html>

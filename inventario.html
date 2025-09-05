@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- AriStore Data Manager -->
+    <script src="js/dataManager.js"></script>
     <style>
         * {
             margin: 0;
@@ -1323,7 +1326,22 @@
         function loadProductsFromStorage() {
             const savedProducts = localStorage.getItem(STORAGE_KEY);
             if (savedProducts) {
-                return JSON.parse(savedProducts);
+                let products = JSON.parse(savedProducts);
+                
+                // 🧹 LIMPIEZA AUTOMÁTICA DE DUPLICADOS
+                const originalLength = products.length;
+                // Eliminar productos duplicados por ID
+                products = products.filter((product, index, self) => 
+                    index === self.findIndex(p => p.id === product.id)
+                );
+                
+                // Si se eliminaron duplicados, guardar la versión limpia
+                if (products.length !== originalLength) {
+                    console.log(`🧹 Inventario - Limpieza automática: ${originalLength} → ${products.length} productos (${originalLength - products.length} duplicados eliminados)`);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+                }
+                
+                return products;
             } else {
                 // First time user - save default products
                 saveProductsToStorage(defaultProducts);
@@ -1369,11 +1387,63 @@
         }
 
         // Initialize variables with persistent data
-        let products = loadProductsFromStorage();
+        let products = [];
         let nextProductId = loadNextIdFromStorage();
         let productCounters = loadCountersFromStorage();
         let isEditMode = false;
         let currentEditId = null;
+
+        // ============= SISTEMA CENTRALIZADO DE DATOS =============
+        
+        // Inicializar con el gestor centralizado
+        function initializeCentralizedData() {
+            if (window.AriStoreData) {
+                console.log('🎯 Usando gestor centralizado de datos');
+                products = window.aristore.getProducts();
+                
+                // Si no hay productos, crear los por defecto
+                if (products.length === 0) {
+                    console.log('📦 Creando productos por defecto...');
+                    window.aristore.saveProducts(defaultProducts);
+                    products = window.aristore.getProducts();
+                }
+                
+                console.log(`✅ Productos cargados desde gestor centralizado: ${products.length}`);
+            } else {
+                console.log('⚠️ Gestor centralizado no disponible, usando método local');
+                products = loadProductsFromStorage();
+            }
+        }
+
+        // Sobrescribir funciones de guardado para usar gestor centralizado
+        const originalSaveProducts = saveProductsToStorage;
+        function saveProductsToStorage(productsArray) {
+            if (window.aristore) {
+                return window.aristore.saveProducts(productsArray);
+            }
+            return originalSaveProducts(productsArray);
+        }
+
+        // Escuchar cambios de otros sistemas
+        window.addEventListener('aistoreDataChange', function(event) {
+            const { type, data } = event.detail;
+            
+            if (type === 'products') {
+                console.log('🔄 Datos de productos actualizados por otro sistema');
+                products = data;
+                renderTable();
+                updateStats();
+            }
+        });
+
+        // Esperar a que el gestor esté disponible
+        function waitForDataManager(callback) {
+            if (window.AriStoreData) {
+                callback();
+            } else {
+                setTimeout(() => waitForDataManager(callback), 100);
+            }
+        }
 
         function generateProductCode() {
             const categorySelect = document.getElementById('categorySelect');
@@ -1981,38 +2051,84 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página de inventario cargada');
-            console.log('📦 Productos iniciales:', products.length);
-            console.log('🔢 Próximo ID:', nextProductId);
-            console.log('📊 Contadores:', productCounters);
             
-            // Verificar elementos importantes
-            const tbody = document.getElementById('inventoryTableBody');
-            const addBtn = document.querySelector('button[onclick="openAddProductModal()"]');
-            const saveBtn = document.querySelector('button[onclick="saveProduct()"]');
-            
-            console.log('🎯 Elementos encontrados:');
-            console.log('  - tbody:', !!tbody);
-            console.log('  - botón agregar:', !!addBtn);
-            console.log('  - botón guardar:', !!saveBtn);
-            
-            renderTable();
-            updateStats();
-            setupSearch();
-            
-            // Configurar event listeners
-            document.getElementById('categorySelect').addEventListener('change', generateProductCode);
-            document.getElementById('purchasePrice').addEventListener('input', calculateGains);
-            document.getElementById('shippingCost').addEventListener('input', calculateGains);
-            document.getElementById('salePrice').addEventListener('input', calculateGains);
-            
-            // Click fuera del modal para cerrarlo
-            document.getElementById('addProductModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeProductModal();
-                }
+            // Esperar a que el gestor de datos esté disponible
+            waitForDataManager(() => {
+                console.log('🎯 Gestor de datos disponible, inicializando...');
+                
+                // Inicializar con datos centralizados
+                initializeCentralizedData();
+                
+                console.log('📦 Productos finales:', products.length);
+                console.log('🔢 Próximo ID:', nextProductId);
+                console.log('📊 Contadores:', productCounters);
+                
+                // Verificar elementos importantes
+                const tbody = document.getElementById('inventoryTableBody');
+                const addBtn = document.querySelector('button[onclick="openAddProductModal()"]');
+                const saveBtn = document.querySelector('button[onclick="saveProduct()"]');
+                
+                console.log('🎯 Elementos encontrados:');
+                console.log('  - tbody:', !!tbody);
+                console.log('  - botón agregar:', !!addBtn);
+                console.log('  - botón guardar:', !!saveBtn);
+                
+                // Verificar consistencia de datos
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                console.log('💾 Productos en localStorage:', stored.length);
+                console.log('🧠 Productos en memoria:', products.length);
+                
+                // Forzar renderizado inicial
+                renderTable();
+                updateStats();
+                setupSearch();
+                
+                // Verificación post-renderizado
+                setTimeout(() => {
+                    const finalRows = document.querySelectorAll('#inventoryTableBody tr');
+                    console.log('📊 Filas renderizadas:', finalRows.length);
+                    
+                    if (finalRows.length === 0 && products.length > 0) {
+                        console.log('🚨 ERROR: No se renderizaron filas, reintentando...');
+                        renderTable();
+                    }
+                    
+                    // Verificar contadores de paginación
+                    const showingElement = document.getElementById('showingCount');
+                    const totalElement = document.getElementById('totalCount');
+                    
+                    if (showingElement && totalElement) {
+                        showingElement.textContent = products.length;
+                        totalElement.textContent = products.length;
+                        console.log('📊 Contadores finales:', products.length);
+                    }
+                }, 500);
             });
             
-            console.log('✅ Inicialización completada');
+            // Configurar event listeners
+            setTimeout(() => {
+                const categorySelect = document.getElementById('categorySelect');
+                const purchasePrice = document.getElementById('purchasePrice');
+                const shippingCost = document.getElementById('shippingCost');
+                const salePrice = document.getElementById('salePrice');
+                const modal = document.getElementById('addProductModal');
+                
+                if (categorySelect) categorySelect.addEventListener('change', generateProductCode);
+                if (purchasePrice) purchasePrice.addEventListener('input', calculateGains);
+                if (shippingCost) shippingCost.addEventListener('input', calculateGains);
+                if (salePrice) salePrice.addEventListener('input', calculateGains);
+                
+                // Click fuera del modal para cerrarlo
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeProductModal();
+                        }
+                    });
+                }
+            }, 1000);
+            
+            console.log('✅ Inicialización DOMContentLoaded completada');
         });
 
         // Animaciones CSS adicionales
@@ -2743,6 +2859,119 @@
                 renderTable();
                 updateStats();
                 console.log('✅ Sistema reiniciado');
+            },
+            // 🛠️ FUNCIONES DE LIMPIEZA Y DIAGNÓSTICO DE DUPLICADOS
+            diagnosticarDuplicados: () => {
+                console.log('🔍 === DIAGNÓSTICO DE DUPLICADOS - INVENTARIO ===');
+                
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const inMemory = products;
+                
+                console.log('📊 Estadísticas:');
+                console.log('  - En localStorage:', stored.length);
+                console.log('  - En memoria:', inMemory.length);
+                
+                console.log('🔢 IDs en localStorage:', stored.map(p => p.id).sort((a,b) => a-b));
+                console.log('🔢 IDs en memoria:', inMemory.map(p => p.id).sort((a,b) => a-b));
+                
+                // Buscar duplicados en localStorage
+                const storedIds = stored.map(p => p.id);
+                const duplicatesInStorage = storedIds.filter((id, index) => storedIds.indexOf(id) !== index);
+                
+                if (duplicatesInStorage.length > 0) {
+                    console.log('🚨 IDs duplicados encontrados:', duplicatesInStorage);
+                    console.log('📋 Productos duplicados:', stored.filter(p => duplicatesInStorage.includes(p.id)));
+                } else {
+                    console.log('✅ No hay duplicados en localStorage');
+                }
+                
+                return {
+                    localStorage: stored.length,
+                    memoria: inMemory.length,
+                    duplicados: duplicatesInStorage.length
+                };
+            },
+            limpiarDuplicados: () => {
+                console.log('🧹 Iniciando limpieza de duplicados en inventario...');
+                
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const originalCount = stored.length;
+                
+                // Eliminar duplicados basándose en ID
+                const unique = stored.filter((product, index, self) => 
+                    index === self.findIndex(p => p.id === product.id)
+                );
+                
+                if (unique.length !== originalCount) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+                    console.log(`✅ Limpieza completada: ${originalCount} → ${unique.length} productos`);
+                    console.log(`🗑️ Eliminados ${originalCount - unique.length} duplicados`);
+                    
+                    // Actualizar datos en memoria
+                    products = unique;
+                    renderTable();
+                    updateStats();
+                    
+                    const recargar = confirm('¿Recargar la página para aplicar completamente los cambios?');
+                    if (recargar) {
+                        location.reload();
+                    }
+                } else {
+                    console.log('✅ No se encontraron duplicados para limpiar');
+                }
+                
+                return unique.length;
+            },
+            // 🚨 FUNCIÓN DE CORRECCIÓN DE EMERGENCIA
+            corregirAhora: () => {
+                console.log('🚨 === CORRECCIÓN DE EMERGENCIA ===');
+                
+                // 1. Limpiar duplicados
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const unique = stored.filter((product, index, self) => 
+                    index === self.findIndex(p => p.id === product.id)
+                );
+                
+                if (unique.length !== stored.length) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+                    console.log(`🧹 Duplicados eliminados: ${stored.length} → ${unique.length}`);
+                }
+                
+                // 2. Actualizar datos en memoria
+                products = unique;
+                console.log('💾 Datos actualizados en memoria:', products.length);
+                
+                // 3. Forzar renderizado
+                renderTable();
+                console.log('🔄 Tabla renderizada');
+                
+                // 4. Actualizar estadísticas
+                updateStats();
+                console.log('📊 Estadísticas actualizadas');
+                
+                // 5. Corregir contadores de paginación
+                const showingElement = document.getElementById('showingCount');
+                const totalElement = document.getElementById('totalCount');
+                
+                if (showingElement) showingElement.textContent = products.length;
+                if (totalElement) totalElement.textContent = products.length;
+                
+                console.log('📊 Contadores corregidos');
+                
+                // 6. Verificación final
+                const finalRows = document.querySelectorAll('#inventoryTableBody tr');
+                console.log(`✅ Verificación final: ${finalRows.length} filas en tabla, ${products.length} productos en datos`);
+                
+                if (finalRows.length !== products.length) {
+                    console.log('⚠️ Inconsistencia detectada, reintentando renderizado...');
+                    setTimeout(() => renderTable(), 100);
+                }
+                
+                return {
+                    productosEnDatos: products.length,
+                    filasEnTabla: finalRows.length,
+                    correccionExitosa: finalRows.length === products.length
+                };
             }
         };
         
@@ -2754,6 +2983,11 @@
         console.log('  - debugAriStore.forceRender() - Forzar renderizado');
         console.log('  - debugAriStore.reset() - Reiniciar sistema');
         console.log('  - debugAriStore.viewStoredData() - Ver datos guardados');
+        console.log('  - debugAriStore.diagnosticarDuplicados() - Buscar duplicados');
+        console.log('  - debugAriStore.limpiarDuplicados() - Limpiar duplicados');
+        console.log('🚨 - debugAriStore.corregirAhora() - CORRECCIÓN COMPLETA');
+        console.log('');
+        console.log('💡 Para solución rápida ejecuta: debugAriStore.corregirAhora()');
     </script>
 </body>
 </html>
